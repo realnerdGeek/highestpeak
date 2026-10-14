@@ -7,11 +7,13 @@
 <meta name="description" content="Turn videos into sounds you can loop, shuffle and trim.">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<!-- keep the status bar solid: on iOS 26 and later a see-through one makes the home screen app a status bar short at the bottom (WebKit bug 301108) -->
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
 <meta name="apple-mobile-web-app-title" content="HighestPeak">
-<meta name="theme-color" content="#0A0A0D">
+<meta name="theme-color" content="#F5F5F7" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#0A0A0D" media="(prefers-color-scheme: dark)">
 <meta name="color-scheme" content="light dark">
-<meta name="hp-build" content="20261014192928-1a33b9ba">
+<meta name="hp-build" content="20261014195833-1a33b9ba">
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="apple-touch-icon" href="apple-touch-icon.png">
 <link rel="icon" type="image/png" href="icon-192.png">
