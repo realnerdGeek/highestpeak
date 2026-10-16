@@ -1,13 +1,13 @@
 {
-  "name": "HighestPeak",
-  "short_name": "HighestPeak",
+  "name": "Ear Worm",
+  "short_name": "Ear Worm",
   "description": "Turn videos into sounds you can loop, shuffle and trim.",
   "id": "./",
   "start_url": "./",
   "scope": "./",
   "display": "standalone",
   "orientation": "portrait",
-  "background_color": "#0A0A0D",
+  "background_color": "#17121F",
   "theme_color": "#0A0A0D",
   "icons": [
     {
@@ -27,6 +27,53 @@
       "sizes": "512x512",
       "type": "image/png",
       "purpose": "maskable"
+    }
+  ],
+  "shortcuts": [
+    {
+      "name": "Shuffle everything",
+      "short_name": "Shuffle",
+      "url": "./?go=shuffle",
+      "icons": [
+        {
+          "src": "icon-192.png",
+          "sizes": "192x192",
+          "type": "image/png"
+        }
+      ]
+    },
+    {
+      "name": "Upload",
+      "url": "./?go=upload",
+      "icons": [
+        {
+          "src": "icon-192.png",
+          "sizes": "192x192",
+          "type": "image/png"
+        }
+      ]
+    },
+    {
+      "name": "Library",
+      "url": "./?go=library",
+      "icons": [
+        {
+          "src": "icon-192.png",
+          "sizes": "192x192",
+          "type": "image/png"
+        }
+      ]
+    },
+    {
+      "name": "Search",
+      "url": "./?go=search",
+      "icons": [
+        {
+          "src": "icon-192.png",
+          "sizes": "192x192",
+          "type": "image/png"
+        }
+      ]
     }
   ]
 }
