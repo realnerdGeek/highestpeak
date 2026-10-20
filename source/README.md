@@ -10,15 +10,15 @@ source/
     v6-index-head.txt   page head used for the test copy (app/index.html)
     v8/build.py         applies the patches below, in order, and checks the JavaScript parses
     v8/lib.py           patch helpers (rep asserts the exact match count, cut, before, after)
-    v8/p5_home.py ... p19_v17.py   one patch file per version (p10 = home screen app storage, p11 = V10, p12 = V10.1, p13 = V11, p14 = V12, p15 = V13, p16 = V14 to V14.2, p17 = V15, p18 = V16, p19 = V17)
-    test1.js ... test23.js         one test file per version (test16 = V11 sync, test17 = V12, test18 = V13, test19 = V14, test20 = V14.2, test21 = V15 Play anywhere, test22 = V16 gym and share card, test23 = V17 sound, BPM and silence trim)
+    v8/p5_home.py ... p20_v18.py   one patch file per version (p10 = home screen app storage, p11 = V10, p12 = V10.1, p13 = V11, p14 = V12, p15 = V13, p16 = V14 to V14.2, p17 = V15, p18 = V16, p19 = V17, p20 = V18)
+    test1.js ... test24.js         one test file per version (test16 = V11 sync, test17 = V12, test18 = V13, test19 = V14, test20 = V14.2, test21 = V15 Play anywhere, test22 = V16 gym and share card, test23 = V17 sound, BPM and silence trim, test24 = V18 tags, smart playlists, folders, source link, folder drop, Open with, Android share)
     legacy.js           loaded by tests 1 to 16: shows every Settings section on one page, marks the sync invite as seen, and sets __HP_QUIET (no first-open guide, Name it sheet or What's new popping up mid-test) __HP_RT_OFF (no live channel) and __HP_KEEP_SILENCE (V17's silence trim leaves their files exactly as they were)
     mocksb.js           a stand-in for Supabase (accounts, docs table rules, files, usernames, two-step sign-in, delete account, V14 pings and feedback, the V15 channel rule)
     mockrt.js           a stand-in for Supabase Realtime (private channels, presence, broadcast) through Playwright's WebSocket routing, for test21
     pw.js               finds Playwright (PW_PATH, the Claude workspace copy, or npm)
     media/              test files that are safe to be public (made with ffmpeg)
     logo/               earworm-icon.svg and earworm-icon-1024.png (the app icons come from this), plus the old HighestPeak logo
-  pwa/build_pwa.py      turns app/gym-tapes.html into the home screen site in pwa/site
+  pwa/build_pwa.py      turns app/gym-tapes.html into the home screen site in pwa/site (since V18 the manifest also has file_handlers for Open with on a computer and a share_target for Android, and sw.js takes the shared files)
   sql/                  the Supabase setup pastes (setup.sql, setup12.sql, fix12.sql, v14.sql, v15.sql) and the local Postgres test files (rls12.sql, rls14.sql, mock15.sql, rls15.sql)
 ```
 
@@ -38,9 +38,9 @@ python3 v8/build.py                   # back to the current version
 ```
 
 ### Making a new version
-1. Add the next patch file (after p19_v17.py: `app/v8/p20_v18.py`) with an `apply(d)` function, and add it to the module list in `build.py`.
+1. Add the next patch file (after p20_v18.py: `app/v8/p21_v19.py`) with an `apply(d)` function, and add it to the module list in `build.py`.
 2. Build, then test (below).
-3. Add the next test file (`test24.js`) for the new version.
+3. Add the next test file (`test25.js`) for the new version.
 4. Deploy (below).
 
 ## Test
@@ -65,7 +65,7 @@ Most older tests use copies of real saved videos (other people's TikToks and Mat
 - `app/seed/`: workout-loop.mp4 and its files
 - `app/out/four.zip`
 
-Without the zip, test18 to test23 run fully. With it, everything but test4 runs.
+Without the zip, test18 to test24 run fully. With it, everything but test4 runs.
 
 ### SQL tests
 Run Postgres 16 locally, load `sql/mock.sql` and `sql/mock12b.sql` (a stand-in for Supabase's auth and storage schemas; signed-in users can't read the sign-in factors table, like the real one), then `setup.sql`, `setup12.sql`, `fix12.sql`, `v14.sql`, then `rls12.sql` and `rls14.sql`. For V15: `mock15.sql` (a stand-in for Supabase's realtime schema), `v15.sql`, then `rls15.sql`. Every check prints `t`, and every ERROR line in the output is an expected refusal.

@@ -10,7 +10,8 @@ CSS = r'''
 .lib-filter .gym-chip{flex:none}
 .tag-chips{display:flex;flex-wrap:wrap;gap:8px;margin:4px 0 14px}
 .tag-chips .gym-chip{max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-.tag-add{display:flex;gap:8px;align-items:center}
+.tag-add{display:flex;flex-direction:row;gap:8px;align-items:center}
+.tag-add .btn{flex:none}
 .tag-add input{flex:1;min-width:0}
 .sheet-panel .note{font-size:13px;color:var(--muted);margin:10px 0 0}
 .pl-folder{margin-top:22px}
@@ -25,8 +26,9 @@ CSS = r'''
 .form-row{display:grid;gap:6px}
 .form-row > span{font-size:13px;font-weight:700;color:var(--muted)}
 .form-row select{font:inherit;font-size:16px;width:100%;min-height:50px;padding:0 12px;border-radius:14px;border:1px solid transparent;background:var(--raise);color:var(--ink)}
-.form-row.check{grid-template-columns:minmax(0,1fr) auto;align-items:center}
-.form-row.check input{width:22px;height:22px;accent-color:var(--accent)}
+.form-row.liked-row{grid-template-columns:minmax(0,1fr) auto;align-items:center;min-height:44px}
+.form-row.liked-row > span{font-size:15px;color:var(--ink);font-weight:600}
+.form-row.liked-row input{width:22px;height:22px;margin:0;accent-color:var(--accent)}
 .smart-count{font-size:14px;color:var(--muted);margin:6px 0 12px}
 .folder-pick{margin-top:10px}
 .pair-btns{display:flex;gap:8px;flex-wrap:wrap;justify-content:flex-end}
@@ -77,6 +79,11 @@ async function setTags(ids, tag, on) {
   await Promise.all(jobs);
   if (S.tagF && !allTags().some(x => x.tag === S.tagF)) S.tagF = '';
 }
+/* what "all uploads" is called when a Library filter is on */
+function allLabel() {
+  if (S.tab !== 'library' || (!S.tagF && S.bpmF !== 'fast')) return 'All uploads';
+  return S.tagF ? 'Tagged ' + S.tagF + (S.bpmF === 'fast' ? ', 140+ BPM' : '') : '140+ BPM';
+}
 /* filter chips over the uploads in Library: the fast ones, then each tag */
 function libFilters() {
   const tags = allTags(), fast = S.tracks.some(t => t.bpm > 0);
@@ -115,7 +122,7 @@ function smartForm(p) {
     '<div class="form-rows">' +
       sel('stag', 'Tag', [['', 'Any tag']].concat(tags.map(x => [x.tag, x.tag])).concat(r.tag && !tags.some(x => x.tag === r.tag) ? [[r.tag, r.tag]] : []), r.tag) +
       sel('sbpm', 'BPM', [[0, 'Any'], [100, '100 and up'], [120, '120 and up'], [140, '140 and up'], [160, '160 and up']], r.bpm) +
-      '<label class="form-row check"><span>Only liked uploads</span><input type="checkbox" name="sliked" id="smart-sliked"' + (r.liked ? ' checked' : '') + '></label>' +
+      '<label class="form-row liked-row"><span>Only liked uploads</span><input type="checkbox" name="sliked" id="smart-sliked"' + (r.liked ? ' checked' : '') + '></label>' +
       sel('ssort', 'Order', Object.keys(SMART_SORTS).map(k => [k, SMART_SORTS[k]]), r.sort) +
       sel('smax', 'How many', [[0, 'All that match'], [10, 'Top 10'], [25, 'Top 25'], [50, 'Top 50']], r.max) +
     '</div><p class="smart-count" id="smartCount" aria-live="polite"></p>' +
@@ -273,7 +280,10 @@ def apply(d):
           "const plTracks = p => (p && p.smart ? smartTracks(p.smart) : (p.tracks || []).map(track).filter(Boolean));     // a smart playlist works its uploads out every time")
     # Library: filters (BPM and tags) and search by tag
     d.rep("  const k = S.opt.sort, list = S.bpmF === 'fast' ? S.tracks.filter(t => t.bpm >= 140) : S.tracks.slice();   // S.tracks is already newest first; the 140+ BPM filter in Library",
-          "  const k = S.opt.sort, list = S.tracks.filter(t => (S.bpmF !== 'fast' || t.bpm >= 140) && (!S.tagF || tagsOf(t).indexOf(S.tagF) >= 0));   // S.tracks is already newest first; the filters in Library")
+          "  const k = S.opt.sort, lib = S.tab === 'library', list = S.tracks.filter(t => !lib || ((S.bpmF !== 'fast' || t.bpm >= 140) && (!S.tagF || tagsOf(t).indexOf(S.tagF) >= 0)));   // S.tracks is already newest first; the filters only count in Library (Home's Shuffle everything is everything)")
+    d.rep("  return { ids: visibleTracks().map(t => t.id), label: 'All uploads' };", "  return { ids: visibleTracks().map(t => t.id), label: allLabel() };")
+    d.rep("  'play-all'() { S.shuffle = false; savePrefs(); P.ctx = 'all'; startQueue(visibleTracks().map(t => t.id), 'All uploads', null); },", "  'play-all'() { S.shuffle = false; savePrefs(); P.ctx = 'all'; startQueue(visibleTracks().map(t => t.id), allLabel(), null); },")
+    d.rep("  'shuffle-all'() { S.shuffle = true; savePrefs(); P.ctx = 'all'; startQueue(visibleTracks().map(t => t.id), 'All uploads', null); },", "  'shuffle-all'() { S.shuffle = true; savePrefs(); P.ctx = 'all'; startQueue(visibleTracks().map(t => t.id), allLabel(), null); },")
     d.rep("          (S.tracks.some(t => t.bpm > 0) ? '<div class=\"lib-filter\"><button class=\"gym-chip\" id=\"bpmFilter\" data-act=\"bpm-filter\" aria-pressed=\"' + (S.bpmF === 'fast') + '\">140+ BPM</button></div>' : '')) +",
           "          libFilters()) +")
     d.rep("  return { rows: list.map((t, i) => trackRow(t, i, 'all')).join(''), count: countText(list.length) + ', ' + fmt(sumDur(list)) + ', ' + SORTS[S.opt.sort].toLowerCase() };",
@@ -305,7 +315,7 @@ def apply(d):
     d.rep("      '<div class=\"pl-head\">' + (o.liked ? likedCover() : plCover(o.p)) + '<div><h2>' + esc(o.name) + '</h2><div class=\"meta\">' + countText(list.length) + ', ' + fmt(sumDur(list)) + '</div></div></div>' +",
           "      '<div class=\"pl-head\">' + (o.liked ? likedCover() : plCover(o.p)) + '<div><h2>' + esc(o.name) + '</h2><div class=\"meta\">' + (isSmart(o.p) ? '<span class=\"smart-badge\">' + V18_IC.bolt + 'Smart</span> ' + esc(smartText(o.p.smart)) + '<br>' : o.p && cleanFolder(o.p.folder) ? esc(cleanFolder(o.p.folder)) + ' · ' : '') + countText(list.length) + ', ' + fmt(sumDur(list)) + '</div></div></div>' +")
     d.rep("      (o.liked ? '' : '<button class=\"btn sm\" data-act=\"pl-add\">' + IC.plus + 'Add</button><button class=\"icon-btn sm\" data-act=\"pl-menu\" aria-label=\"Playlist options\">' + IC.more + '</button>') + '</div>' +",
-          "      (o.liked ? '' : isSmart(o.p) ? '<button class=\"btn sm\" data-act=\"smart-edit\">' + V18_IC.bolt + 'Rules</button><button class=\"icon-btn sm\" data-act=\"pl-menu\" aria-label=\"Playlist options\">' + IC.more + '</button>'\n"
+          "      (o.liked ? '' : isSmart(o.p) ? '<button class=\"btn sm\" data-act=\"smart-edit\">Rules</button><button class=\"icon-btn sm\" data-act=\"pl-menu\" aria-label=\"Playlist options\">' + IC.more + '</button>'\n"
           "        : '<button class=\"btn sm\" data-act=\"pl-add\">' + IC.plus + 'Add</button><button class=\"icon-btn sm\" data-act=\"pl-menu\" aria-label=\"Playlist options\">' + IC.more + '</button>') + '</div>' +")
     d.rep("      (list.length ? '<div class=\"list\" id=\"plList\"' + (o.liked ? '' : ' data-sortlist=\"pl\"') + '>' + list.map((t, i) => trackRow(t, i, o.ctx)).join('') + '</div>'\n"
           "        : o.liked ? '<div class=\"empty\"><h2>No likes yet</h2><p>Tap the heart on an upload and it lands here.</p></div>'\n"

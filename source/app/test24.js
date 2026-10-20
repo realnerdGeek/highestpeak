@@ -86,7 +86,14 @@ const QUIET = () => { window.HP_STANDALONE = true; window.__HP_QUIET = true; win
   ok('a tag chip shows only the uploads with that tag', (await titles('#trackList')).sort().join() === 'click-140,tone-a,tone-b' && /tagged leg day/.test(await page.textContent('#trackCount')), await titles('#trackList'));
   await page.click('#bpmFilter'); await sleep(300);
   ok('a tag and 140+ BPM together', (await titles('#trackList')).join() === 'click-140');
-  await page.click('#bpmFilter'); await page.click('#libFilter [data-k="leg day"]'); await sleep(300);
+  await page.click('#bpmFilter'); await sleep(300);
+  await page.click('#view .bar [data-act="play-all"]'); await sleep(500);
+  ok('Play in Library with a tag on plays just those, and says so', (await G(() => window.__gymTapes.P.order.length)) === 3 && (await G(() => window.__gymTapes.P.label)) === 'Tagged leg day', await G(() => [window.__gymTapes.P.order.length, window.__gymTapes.P.label]));
+  await page.click('#tabHome'); await sleep(300); await page.click('[data-act="shuffle-all"]'); await sleep(500);
+  ok('but Home\'s Shuffle everything is still everything', (await G(() => window.__gymTapes.P.order.length)) === 5);
+  await G(() => { const a = window.__gymTapes.audio; if (a && !a.paused) a.pause(); });
+  await page.click('#tabLibrary'); await sleep(300);
+  await page.click('#libFilter [data-k="leg day"]'); await sleep(300);
   ok('tapping the chip again shows everything', (await titles('#trackList')).length === 5);
   // search finds tags
   await page.click('#tabSearch'); await sleep(250);
