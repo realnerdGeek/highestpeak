@@ -3,17 +3,17 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<title>Ear Worm</title>
+<title>EarWorm</title>
 <meta name="description" content="Turn videos into sounds you can loop, shuffle and trim.">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="mobile-web-app-capable" content="yes">
 <!-- keep the status bar solid: on iOS 26 and later a see-through one makes the home screen app a status bar short at the bottom (WebKit bug 301108) -->
 <meta name="apple-mobile-web-app-status-bar-style" content="default">
-<meta name="apple-mobile-web-app-title" content="Ear Worm">
+<meta name="apple-mobile-web-app-title" content="EarWorm">
 <meta name="theme-color" content="#F5F5F7" media="(prefers-color-scheme: light)">
 <meta name="theme-color" content="#0A0A0D" media="(prefers-color-scheme: dark)">
 <meta name="color-scheme" content="light dark">
-<meta name="hp-build" content="20261015205645-17621675">
+<meta name="hp-build" content="20261020001027-93206ba8">
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="apple-touch-icon" href="apple-touch-icon.png">
 <link rel="icon" type="image/png" href="icon-192.png">
@@ -619,7 +619,7 @@ a.btn{text-decoration:none;color:inherit}
 }
 @media (prefers-reduced-motion: reduce){.sheet-panel,.sheet.out .sheet-panel{animation:none!important}}
 
-/* Ear Worm: the icon is its own dark square; "Worm" is lime on dark looks, the same ink as "Ear" on light ones */
+/* EarWorm: the icon is its own dark square; "Worm" is lime on dark looks, the same ink as "Ear" on light ones */
 :root{--worm-text:var(--ink)}
 @media (prefers-color-scheme: dark){:root:not([data-theme="light"]){--worm-text:#C8F135}}
 :root[data-theme="dark"]{--worm-text:#C8F135}
@@ -653,12 +653,228 @@ h1 .brand-t{font-size:25px}
   .set-side .set-q{margin:0 0 12px;height:46px}
   .set-side .set-q input{font-size:15px}
 }
+
+/* ===================== V14: the redesign ===================== */
+:root{--accent:#C8F135;--accent-ink:#4A6A00;--on-accent:#0A0A0D;--round:ui-rounded,"SF Pro Rounded","Nunito",system-ui,-apple-system,sans-serif;
+  --g-bg:rgba(255,255,255,.68);--g-line:rgba(10,10,20,.08);--g-hi:rgba(255,255,255,.8);--g-sh:0 10px 30px rgba(16,16,32,.14);--g-solid:#FFFFFF;--g-over:rgba(255,255,255,.55)}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){--accent-ink:#C8F135;--g-bg:rgba(34,34,42,.52);--g-line:rgba(255,255,255,.13);--g-hi:rgba(255,255,255,.18);--g-sh:0 12px 32px rgba(0,0,0,.55);--g-solid:#1C1C23;--g-over:rgba(255,255,255,.1)}}
+:root[data-theme="dark"],:root[data-skin="dark"]{--accent-ink:#C8F135;--g-bg:rgba(34,34,42,.52);--g-line:rgba(255,255,255,.13);--g-hi:rgba(255,255,255,.18);--g-sh:0 12px 32px rgba(0,0,0,.55);--g-solid:#1C1C23;--g-over:rgba(255,255,255,.1)}
+:root[data-skin="light"]{--accent-ink:#4A6A00;--g-bg:rgba(255,255,255,.62);--g-line:rgba(10,10,20,.1);--g-hi:rgba(255,255,255,.8);--g-sh:0 10px 30px rgba(16,16,32,.16);--g-solid:#FFFFFF;--g-over:rgba(255,255,255,.55)}
+/* rounded headings, lime for the main buttons and anything switched on */
+.page-t,.sec-h h3,.f-title,.empty h2,.sheet-panel h2,.np-head span{font-family:var(--round);font-weight:800}
+.sec-h h3{font-size:21px;letter-spacing:-.02em}
+.btn.primary{background:var(--accent);color:var(--on-accent)}
+.switch[aria-checked="true"]{background:var(--accent)}
+.switch[aria-checked="true"]::after{background:#FFFFFF}
+.tog[aria-pressed="true"],.tile.cur .title,.rot.cur .title,.row.cur .title{color:var(--accent-ink)}
+.stat-chip svg:first-child{color:var(--accent-ink)}
+/* frosted glass on the controls: the tab bar, the player, the buttons over covers */
+.nav,.player-in,.np-head .icon-btn{background:var(--g-bg);-webkit-backdrop-filter:blur(22px) saturate(180%);backdrop-filter:blur(22px) saturate(180%);border:1px solid var(--g-line);box-shadow:inset 0 1px 0 var(--g-hi),var(--g-sh)}
+.f-top .icon-btn,.f-watch,.full .chips .chip{background:var(--g-over);-webkit-backdrop-filter:blur(20px) saturate(170%);backdrop-filter:blur(20px) saturate(170%);border:1px solid var(--g-line);box-shadow:inset 0 1px 0 var(--g-hi)}
+body.no-glass .nav,body.no-glass .player-in,body.no-glass .np-head .icon-btn{background:var(--g-solid);-webkit-backdrop-filter:none;backdrop-filter:none}
+body.no-glass .f-top .icon-btn,body.no-glass .f-watch,body.no-glass .full .chips .chip{background:var(--raise);-webkit-backdrop-filter:none;backdrop-filter:none}
+/* Home: quick picks with the cover flush left, bigger covers in the rows that scroll sideways */
+.rot{grid-template-columns:56px minmax(0,1fr);gap:10px;min-height:56px;padding:0 10px 0 0;border-radius:10px;overflow:hidden;box-shadow:none;background:var(--surface)}
+.rot .cover{width:56px;height:56px;border-radius:0}
+.rot .meta{font-size:12px}
+.tile{width:140px}
+.tile .cover{width:140px;height:140px;border-radius:14px;box-shadow:0 10px 24px var(--shadow)}
+.row .cover{border-radius:10px}
+.stat-chips{margin-top:12px}
+/* Now playing panel bits: only on computers */
+.np-head,.np-q{display:none}
+.mini-prog{display:none}
+/* the big player: colors from the cover, a big cover, a white play button */
+.full{background:radial-gradient(120% 60% at 50% 0%,hsl(var(--hue,235) var(--ft-s) calc(var(--ft-l) + 8%) / .62),transparent 72%),linear-gradient(hsl(var(--hue,235) var(--ft-s) var(--ft-l) / var(--ft-a)),transparent 640px),var(--bg)}
+.f-cover{position:relative;width:min(100%,342px,44vh)}
+.f-cover .cover{border-radius:22px;box-shadow:0 30px 60px var(--shadow)}
+.f-title{font-size:27px;letter-spacing:-.025em}
+.full .ctl .big{width:76px;height:76px;box-shadow:0 14px 34px var(--shadow)}
+.full .tog span{display:none}
+.full .tog{width:48px}
+.full .chips .chip{padding:9px 13px;font-size:12.5px}
+/* gym mode: tap the cover and only the cover, the name and a thin line stay */
+.gym-prog,.gym-hint{display:none}
+.full.gym .f-top,.full.gym .f-head .heart,.full.gym .wave,.full.gym .ctl,.full.gym .vol,.full.gym .chips,.full.gym .f-side,.full.gym .f-watch{display:none!important}
+.full.gym .full-in{min-height:calc(100vh - 60px);justify-content:center}
+.full.gym .f-cover{width:min(100%,58vh,520px)}
+.full.gym .gym-prog{display:block;height:3px;border-radius:2px;background:color-mix(in srgb,var(--ink) 18%,transparent);overflow:hidden}
+.full.gym .gym-prog i{display:block;height:100%;width:0;background:var(--accent);border-radius:2px}
+.full.gym .gym-hint{display:block;margin:6px 0 0;text-align:center;font-size:13px;font-weight:600;color:var(--muted);animation:hint 3s ease-in-out infinite}
+@keyframes hint{0%,100%{opacity:.35}50%{opacity:.85}}
+/* double-tap the cover to like */
+.burst{position:absolute;left:50%;top:50%;width:120px;height:120px;margin:-60px 0 0 -60px;color:var(--like);pointer-events:none;animation:burst .8s cubic-bezier(.2,1.4,.4,1) forwards;filter:drop-shadow(0 10px 24px rgba(0,0,0,.4))}
+.burst svg{width:120px;height:120px;fill:currentColor;stroke:none}
+@keyframes burst{0%{transform:scale(.2);opacity:0}25%{transform:scale(1.1);opacity:1}60%{transform:scale(1);opacity:1}100%{transform:scale(1.25);opacity:0}}
+/* motion: springy sheets, a heart that pops, lists that slide in */
+.sheet-panel{animation-duration:.38s;animation-timing-function:cubic-bezier(.2,1.18,.35,1)}
+.heart[aria-pressed="true"] svg{animation:heartPop .38s cubic-bezier(.2,1.7,.4,1)}
+@keyframes heartPop{0%{transform:scale(1)}40%{transform:scale(1.35)}100%{transform:scale(1)}}
+#view.enter .list > .row,#view.enter .tile,#view.enter .rot{animation:rowIn .42s cubic-bezier(.2,.9,.3,1) both}
+#view.enter .list > .row:nth-child(2),#view.enter .tile:nth-child(2),#view.enter .rot:nth-child(2){animation-delay:.03s}
+#view.enter .list > .row:nth-child(3),#view.enter .tile:nth-child(3),#view.enter .rot:nth-child(3){animation-delay:.06s}
+#view.enter .list > .row:nth-child(4),#view.enter .tile:nth-child(4),#view.enter .rot:nth-child(4){animation-delay:.09s}
+#view.enter .list > .row:nth-child(n+5),#view.enter .tile:nth-child(n+5),#view.enter .rot:nth-child(n+5){animation-delay:.12s}
+@keyframes rowIn{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:none}}
+::view-transition-group(np-cover){animation-duration:.3s;animation-timing-function:cubic-bezier(.2,.9,.25,1)}
+::view-transition-old(root),::view-transition-new(root){animation-duration:.22s}
+.vt-on .full{animation:none}
+@media (prefers-reduced-motion: reduce){
+  #view.enter .list > .row,#view.enter .tile,#view.enter .rot,.heart[aria-pressed="true"] svg,.burst,.full.gym .gym-hint{animation:none}
+  .nav,.player{transition:none!important}
+}
+/* ---------- phones: a floating tab bar and mini player ---------- */
+@media (max-width: 899.98px){
+  .page-t{font-size:32px;letter-spacing:-.025em}
+  .app{padding-bottom:calc(60px + var(--player-h,0px) + var(--nav-h,66px) + env(safe-area-inset-bottom,0px))}
+  .nav{left:50%;right:auto;bottom:calc(12px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);width:min(520px,calc(100% - 24px));box-sizing:border-box;padding:6px;border-radius:34px;
+    transition:left .34s cubic-bezier(.2,.9,.25,1.1),width .34s cubic-bezier(.2,.9,.25,1.1),transform .34s cubic-bezier(.2,.9,.25,1.1),padding .34s}
+  .nav-in{max-width:none}
+  .nav button{min-height:54px;border-radius:27px;font-size:10.5px;transition:background .2s,color .2s}
+  .nav button[aria-selected="true"]{background:color-mix(in srgb,var(--ink) 11%,transparent);color:var(--accent-ink)}
+  .nav .plus{width:36px;height:26px;border-radius:13px;background:var(--accent);color:var(--on-accent)}
+  .player{left:50%;right:auto;transform:translateX(-50%);width:min(520px,calc(100% - 24px));padding:0;bottom:calc(var(--nav-h,66px) + 20px + env(safe-area-inset-bottom,0px));
+    transition:left .34s cubic-bezier(.2,.9,.25,1.1),width .34s cubic-bezier(.2,.9,.25,1.1),transform .34s cubic-bezier(.2,.9,.25,1.1),bottom .34s cubic-bezier(.2,.9,.25,1.1)}
+  .player-in{position:relative;max-width:none;border-radius:24px}
+  .player.mini .player-in{border-radius:20px;padding:8px 8px 8px 8px;overflow:hidden}
+  .player.mini .now .cover{width:46px;height:46px;border-radius:11px}
+  .player.mini .now-open{grid-template-columns:46px minmax(0,1fr);gap:11px}
+  .player.mini .mini-prog{display:block;position:absolute;left:16px;right:16px;bottom:0;height:3px;border-radius:2px;background:color-mix(in srgb,var(--ink) 14%,transparent);overflow:hidden}
+  .mini-prog i{display:block;height:100%;width:0;background:var(--accent);border-radius:2px}
+  .toast{bottom:calc(var(--player-h,0px) + var(--nav-h,66px) + 30px + env(safe-area-inset-bottom,0px))}
+  /* scrolling down: the tab bar shrinks to one round button and the mini player slides in next to it */
+  body.nav-min .nav{left:12px;transform:none;width:62px;padding:3px}
+  body.nav-min .nav-in{grid-template-columns:minmax(0,1fr)}
+  body.nav-min .nav button:not([aria-selected="true"]),body.nav-min .nav .dot{display:none}
+  body.nav-min .nav button{font-size:0;gap:0;min-height:54px}
+  body.nav-min .player{left:84px;transform:none;width:calc(100% - 96px);bottom:calc(12px + env(safe-area-inset-bottom,0px))}
+  body.nav-min .player.mini .player-in{border-radius:31px}
+  body.nav-min .player.mini .now .cover{border-radius:50%}
+}
+/* ---------- computers: a Now playing panel on the right ---------- */
+@media (min-width: 900px){
+  .page-t{letter-spacing:-.03em}
+  .sec-h h3{font-size:24px}
+  body.has-np{--np-w:340px}
+  body.has-np .app{margin-right:var(--np-w)}
+  .rot-grid{grid-template-columns:repeat(auto-fill,minmax(230px,1fr));gap:10px}
+  .rot{min-height:64px;grid-template-columns:64px minmax(0,1fr)}
+  .rot .cover{width:64px;height:64px}
+  .tile{width:180px}
+  .tile .cover{width:180px;height:180px;border-radius:16px}
+  .player{left:auto;top:0;right:0;bottom:0;width:var(--np-w,340px);animation-name:npIn}
+  @keyframes npIn{from{opacity:0;transform:translateX(24px)}}
+  .player-in{height:100%;box-sizing:border-box;display:flex;flex-direction:column;align-items:stretch;gap:12px;padding:22px 20px 24px;border-radius:0;border:0;border-left:1px solid var(--line);
+    background:var(--sheet);box-shadow:none;-webkit-backdrop-filter:none;backdrop-filter:none;overflow-y:auto}
+  .np-head{display:flex;align-items:center;justify-content:space-between}
+  .np-head span{font-size:16px}
+  .player .now{position:relative;padding:0}
+  .player .now-open{display:flex;flex-direction:column;align-items:stretch;gap:14px;width:100%;text-align:left}
+  .player #pCover{display:block;width:100%}
+  .player #pCover .cover{width:100%;height:auto;aspect-ratio:1;border-radius:18px;box-shadow:0 24px 50px var(--shadow)}
+  .player .now .title{font:800 22px/1.2 var(--round);letter-spacing:-.02em;padding-right:48px}
+  .player .now .meta{padding-right:48px}
+  .player .now-btns{position:absolute;right:0;bottom:4px}
+  .player .chips{justify-content:flex-start}
+  .player .wave{height:34px;margin:0}
+  .player .times{display:flex;justify-content:space-between;margin-top:-6px}
+  .player .ctl{justify-content:space-between;gap:4px}
+  .player .ctl .big{width:58px;height:58px}
+  .player .tog{width:44px}
+  .player .tog span{display:none}
+  .player .vol{width:100%}
+  .np-q{display:block}
+  .np-q .sec-h{margin:10px 0 2px}
+  .np-q .sec-h h3{font-size:17px}
+  .np-q .row-hit{min-height:56px;grid-template-columns:42px minmax(0,1fr);gap:11px}
+  .np-q .row .cover{width:42px;height:42px;border-radius:8px}
+  .np-q .tt .title{font-size:15px}
+  .toast{left:calc(var(--side-w) + (100vw - var(--side-w) - var(--np-w,0px)) / 2)}
+  /* the full-screen player: blurred cover colors behind, Up next in a glass panel */
+  .full{background:radial-gradient(60% 70% at 25% 35%,hsl(var(--hue,235) var(--ft-s) calc(var(--ft-l) + 10%) / .55),transparent 70%),radial-gradient(50% 60% at 80% 75%,hsl(var(--hue,235) var(--ft-s) var(--ft-l) / .6),transparent 70%),var(--bg)}
+  .f-cover{width:min(100%,520px,58vh)}
+  .f-cover .cover{border-radius:26px}
+  .f-title{font-size:40px}
+  .full .f-side{overflow-x:hidden;padding:14px 16px;border-radius:20px;background:var(--g-over);-webkit-backdrop-filter:blur(24px) saturate(180%);backdrop-filter:blur(24px) saturate(180%);border:1px solid var(--g-line);box-shadow:inset 0 1px 0 var(--g-hi)}
+  body.no-glass .full .f-side{background:var(--raise);-webkit-backdrop-filter:none;backdrop-filter:none}
+  .full .f-side .list > .row{margin-inline:0}
+  /* thin scrollbars that only show while scrolling */
+  *{scrollbar-width:thin;scrollbar-color:color-mix(in srgb,var(--ink) 22%,transparent) transparent}
+  ::-webkit-scrollbar{width:10px;height:10px}
+  ::-webkit-scrollbar-track{background:transparent}
+  ::-webkit-scrollbar-thumb{background-color:color-mix(in srgb,var(--ink) 22%,transparent);border-radius:10px;border:3px solid transparent;background-clip:padding-box}
+  html:not(.scrolling) ::-webkit-scrollbar-thumb{background-color:transparent}
+  html:not(.scrolling) .f-side:hover::-webkit-scrollbar-thumb,html:not(.scrolling) .player-in:hover::-webkit-scrollbar-thumb{background-color:color-mix(in srgb,var(--ink) 22%,transparent)}
+}
+
+/* the first-open guide */
+.guide{position:fixed;inset:0;z-index:45;background:var(--bg);color:var(--ink);overflow:auto;display:flex;justify-content:center;padding:calc(18px + env(safe-area-inset-top,0px)) 20px calc(26px + env(safe-area-inset-bottom,0px));animation:viewIn .25s ease-out}
+.guide::before{content:"";position:fixed;left:0;right:0;top:0;height:60vh;background:radial-gradient(90% 70% at 50% 35%,color-mix(in srgb,var(--accent) 16%,transparent),transparent 70%);pointer-events:none}
+.g-in{position:relative;width:100%;max-width:440px;display:flex;flex-direction:column;gap:14px;min-height:100%}
+.g-top{display:flex;align-items:center;justify-content:space-between}
+.g-dots{display:flex;gap:6px}.g-dots i{width:6px;height:6px;border-radius:3px;background:color-mix(in srgb,var(--ink) 25%,transparent)}.g-dots i.on{width:26px;background:var(--accent)}
+.g-phone{position:relative;align-self:center;width:220px;height:322px;border-radius:34px;border:2px solid color-mix(in srgb,var(--ink) 22%,transparent);background:var(--surface);overflow:hidden;box-shadow:0 30px 60px var(--shadow);margin-top:6px;flex:none}
+.g-vid{position:absolute;left:10px;right:10px;top:10px;height:196px;border-radius:24px;background:radial-gradient(circle at 65% 30%,#F0446A 0,transparent 55%),linear-gradient(160deg,#2B1055,#120A22)}
+.g-share{position:absolute;right:18px;top:116px;width:34px;height:34px;border-radius:17px;background:rgba(255,255,255,.2);display:grid;place-items:center;color:#fff}
+.g-sheet{position:absolute;left:0;right:0;bottom:0;height:168px;border-radius:22px 22px 0 0;background:var(--raise);padding:10px 12px;box-sizing:border-box;display:flex;flex-direction:column;gap:6px;animation:gSheet 4s ease-in-out infinite}
+.g-sheet .gh{align-self:center;width:30px;height:4px;border-radius:2px;background:color-mix(in srgb,var(--ink) 30%,transparent)}
+.g-row{position:relative;height:38px;border-radius:10px;background:color-mix(in srgb,var(--ink) 6%,transparent);display:flex;align-items:center;gap:9px;padding:0 10px;font-size:13px;font-weight:600}
+.g-row.hit{font-weight:700;animation:gRow 4s ease-in-out infinite}
+.g-tap{position:absolute;width:30px;height:30px;border-radius:15px;border:3px solid var(--accent);animation:gTap 4s ease-out infinite}
+.g-up{position:absolute;left:14px;right:14px;top:56px;height:150px;border-radius:20px;border:2px dashed color-mix(in srgb,var(--ink) 25%,transparent);display:grid;place-items:center}
+.g-plus{width:58px;height:42px;border-radius:21px;background:var(--accent);color:var(--on-accent);display:grid;place-items:center}
+.g-h{position:absolute;left:16px;top:18px;font:800 20px/1 var(--round)}
+.g-thumbs{position:absolute;left:14px;right:14px;bottom:18px;display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:6px;animation:gThumbs 4s ease-in-out infinite}
+.g-thumbs i{height:62px;border-radius:10px;background:linear-gradient(160deg,#2B1055,#F0446A)}.g-thumbs i:nth-child(2){background:linear-gradient(160deg,#0F3B2E,#C8F135)}.g-thumbs i:nth-child(3){background:linear-gradient(160deg,#0B1A3A,#4AA8FF)}
+.g-mini{position:absolute;left:10px;right:10px;bottom:16px;height:56px;border-radius:18px;background:var(--raise);display:flex;align-items:center;gap:9px;padding:0 10px}
+.g-mini b{width:38px;height:38px;border-radius:10px;background:radial-gradient(circle at 65% 30%,#F0446A 0,transparent 55%),linear-gradient(160deg,#2B1055,#120A22);flex:none}
+.g-mini span{flex:1;font-size:13px;font-weight:700}
+.g-loop{color:var(--accent-ink);animation:gSpin 2.4s linear infinite}
+.g-wave{position:absolute;left:18px;right:18px;top:70px;height:120px;display:flex;align-items:center;gap:4px}
+.g-wave i{flex:1;border-radius:3px;background:var(--accent);animation:eq .9s ease-in-out infinite alternate}
+.g-wave i:nth-child(2n){animation-delay:.2s}.g-wave i:nth-child(3n){animation-delay:.45s}.g-wave i:nth-child(5n){animation-delay:.1s}
+.g-t{margin:8px 0 0;font:800 28px/1.15 var(--round);letter-spacing:-.02em}
+.g-p{margin:0;font-size:15px;line-height:1.45;color:var(--muted)}.g-p b{color:var(--ink)}
+.g-works{display:flex;flex-wrap:wrap;gap:8px}.g-works span{display:inline-flex;align-items:center;gap:6px;height:30px;padding:0 11px;border-radius:15px;background:color-mix(in srgb,var(--ink) 7%,transparent);font-size:12px;font-weight:600}
+.g-acts{margin-top:auto;display:flex;flex-direction:column;gap:10px;padding-top:12px}
+.g-acts .btn{width:100%;min-height:54px;font-size:17px}
+.g-acts .link-btn{align-self:center;padding:8px;font-size:14px;font-weight:600;color:var(--muted)}
+@keyframes gSheet{0%,12%{transform:translateY(105%)}30%,82%{transform:translateY(0)}100%{transform:translateY(105%)}}
+@keyframes gTap{0%,44%{transform:scale(.4);opacity:0}52%{opacity:.95}72%{transform:scale(1.5);opacity:0}100%{opacity:0}}
+@keyframes gRow{0%,48%{background:color-mix(in srgb,var(--ink) 6%,transparent)}56%,78%{background:color-mix(in srgb,var(--accent) 24%,transparent)}100%{background:color-mix(in srgb,var(--ink) 6%,transparent)}}
+@keyframes gThumbs{0%,15%{transform:translateY(130%)}35%,85%{transform:translateY(0)}100%{transform:translateY(130%)}}
+@keyframes gSpin{to{transform:rotate(360deg)}}
+@media (prefers-reduced-motion: reduce){.g-sheet,.g-tap,.g-row.hit,.g-thumbs,.g-loop,.g-wave i{animation:none}}
+/* Name it, after an upload */
+.nameit-head{display:flex;align-items:center;gap:14px}
+.nameit-head .cover{width:64px;height:64px;border-radius:14px;flex:none}
+.nameit-t{display:block;font:800 21px/1.2 var(--round)}
+.nameit-ok{display:inline-flex;align-items:center;gap:5px;color:var(--accent-ink);font-weight:600}
+.nameit-ok svg{width:14px;height:14px}
+.nameit-l{display:block;margin:4px 0 6px;font-size:13px;font-weight:700;color:var(--muted)}
+/* the backup nudge */
+.nudge{margin-top:14px;border-radius:18px;padding:14px;background:color-mix(in srgb,var(--accent) 9%,transparent);border:1px solid color-mix(in srgb,var(--accent) 34%,transparent);display:flex;flex-direction:column;gap:10px}
+.nudge-t{font-weight:700;font-size:15px}
+.nudge .sub{margin:3px 0 0}
+.nudge-b{display:flex;gap:8px}
+.ok-line{color:var(--accent-ink)}
+
+/* Help improve EarWorm, feedback, what's new */
+.about{margin-top:18px}
+.about-b{display:flex;gap:8px;margin-top:10px}
+.about-b .btn{flex:1 1 0;min-width:0}
+.about-v{margin:10px 4px 0;font-size:12px;color:var(--muted);text-align:center}
+#fbText{width:100%;box-sizing:border-box;min-height:120px;resize:vertical;font:inherit;padding:12px 14px;border-radius:14px;border:1px solid var(--line);background:var(--surface);color:var(--ink)}
+.news{list-style:none;margin:4px 0 6px;padding:0;display:flex;flex-direction:column;gap:12px}
+.news li{display:flex;flex-direction:column;gap:2px;padding-left:16px;position:relative}
+.news li::before{content:"";position:absolute;left:0;top:7px;width:8px;height:8px;border-radius:4px;background:var(--accent)}
+.news b{font-size:15px}.news span{font-size:14px;color:var(--muted)}
 </style>
 
 <div id="wall" hidden></div>
 <div class="app" id="app">
   <header class="top">
-    <h1><span class="brand-ic"><svg viewBox="0 0 100 100" aria-hidden="true"><rect width="100" height="100" fill="#17121F"/><g transform="translate(5 0)"><path d="M16 62 C24 36 36 36 42 54 S60 74 70 44" fill="none" stroke="#C8F135" stroke-width="13" stroke-linecap="round"/><circle cx="70" cy="44" r="11" fill="#C8F135"/><circle cx="73" cy="40.8" r="4.3" fill="#FFFFFF"/><circle cx="74" cy="40.2" r="2.2" fill="#17121F"/></g></svg></span><span class="brand-t">Ear <b>Worm</b></span></h1>
+    <h1><span class="brand-ic"><svg viewBox="0 0 100 100" aria-hidden="true"><rect width="100" height="100" fill="#17121F"/><g transform="translate(5 0)"><path d="M16 62 C24 36 36 36 42 54 S60 74 70 44" fill="none" stroke="#C8F135" stroke-width="13" stroke-linecap="round"/><circle cx="70" cy="44" r="11" fill="#C8F135"/><circle cx="73" cy="40.8" r="4.3" fill="#FFFFFF"/><circle cx="74" cy="40.2" r="2.2" fill="#17121F"/></g></svg></span><span class="brand-t">Ear<b>Worm</b></span></h1>
     <input type="file" id="fileInput" accept="video/*,audio/*,.mp4,.mov,.m4v,.m4a,.mp3,.wav,.aac,.flac" multiple hidden>
     <input type="file" id="imgInput" accept="image/*" hidden>
     <input type="file" id="backupInput" accept=".zip,application/zip,application/x-zip-compressed" hidden>
@@ -671,7 +887,7 @@ h1 .brand-t{font-size:25px}
 </div>
 
 <nav class="nav" id="nav" aria-label="Main"><div class="nav-in" role="tablist">
-  <div class="nav-logo"><span class="brand-ic"><svg viewBox="0 0 100 100" aria-hidden="true"><rect width="100" height="100" fill="#17121F"/><g transform="translate(5 0)"><path d="M16 62 C24 36 36 36 42 54 S60 74 70 44" fill="none" stroke="#C8F135" stroke-width="13" stroke-linecap="round"/><circle cx="70" cy="44" r="11" fill="#C8F135"/><circle cx="73" cy="40.8" r="4.3" fill="#FFFFFF"/><circle cx="74" cy="40.2" r="2.2" fill="#17121F"/></g></svg></span><span class="brand-t">Ear <b>Worm</b></span></div>
+  <div class="nav-logo"><span class="brand-ic"><svg viewBox="0 0 100 100" aria-hidden="true"><rect width="100" height="100" fill="#17121F"/><g transform="translate(5 0)"><path d="M16 62 C24 36 36 36 42 54 S60 74 70 44" fill="none" stroke="#C8F135" stroke-width="13" stroke-linecap="round"/><circle cx="70" cy="44" r="11" fill="#C8F135"/><circle cx="73" cy="40.8" r="4.3" fill="#FFFFFF"/><circle cx="74" cy="40.2" r="2.2" fill="#17121F"/></g></svg></span><span class="brand-t">Ear<b>Worm</b></span></div>
   <button role="tab" id="tabHome" data-act="tab" data-tab="home" aria-selected="true"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 11l8-7 8 7v8a1.5 1.5 0 0 1-1.5 1.5H14v-6h-4v6H5.500A1.500 1.500 0 0 1 4 19z"/></svg>Home</button>
   <button role="tab" id="tabLibrary" data-act="tab" data-tab="library" aria-selected="false"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 4v16M10 4v16M15 5l4 14.5"/></svg>Library</button>
   <button role="tab" id="tabUpload" data-act="tab" data-tab="upload" aria-selected="false"><span class="plus"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg></span>Upload<span class="dot" id="upDot" hidden></span></button>
@@ -681,6 +897,7 @@ h1 .brand-t{font-size:25px}
 
 <section class="player" id="player" aria-label="Player" hidden>
   <div class="player-in">
+    <div class="np-head"><span>Now playing</span><button class="icon-btn sm" data-act="full-open" aria-label="Open the full-screen player"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M14 4h6v6M10 20H4v-6M20 4l-7 7M4 20l7-7"/></svg></button></div>
     <div class="now">
       <button class="now-open" data-act="full-open" aria-label="Open the big player"><span id="pCover"></span><span class="now-t"><span class="title" id="pTitle"></span><span class="meta" id="pMeta"></span></span></button>
       <div class="now-btns">
@@ -707,6 +924,7 @@ h1 .brand-t{font-size:25px}
       </button>
     </div>
     <div class="vol" hidden><button class="vol-ic js-vol-ic" data-act="mute" aria-label="Mute"></button><input type="range" class="js-vol" min="0" max="100" step="1" value="100" aria-label="Volume"></div>
+    <div class="np-q"><div class="sec-h"><h3>Up next</h3><span class="f-note" id="pNextNote"></span></div><div class="list" id="pQueue" data-sortlist="queue"></div></div><span class="mini-prog" aria-hidden="true"><i id="pProg"></i></span>
   </div>
 </section>
 
@@ -724,6 +942,7 @@ h1 .brand-t{font-size:25px}
       <div class="grow"><div class="f-title" id="fTitle"></div><div class="f-meta" id="fMeta"></div></div>
       <button class="heart big js-heart" id="fHeart" data-act="like-cur" aria-pressed="false" aria-label="Like"><svg width="22" height="22" viewBox="0 0 24 24" stroke-width="1.9" stroke-linejoin="round" aria-hidden="true"><path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/></svg></button>
     </div>
+    <div class="gym-prog" aria-hidden="true"><i id="gymProg"></i></div><p class="gym-hint" aria-hidden="true">Tap anywhere to show controls</p>
     <div class="wave big" id="fWave" role="slider" tabindex="0" aria-label="Position" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0"></div>
     <div class="times"><span id="fCur">0:00</span><span id="fDur">0:00</span></div>
     <div class="ctl">
@@ -1392,10 +1611,10 @@ async function makeLocalStore() {
 
 /* ---------- state ---------- */
 let store = null;
-const OPT_DEFAULTS = { autoTrim: true, speed: 1, keepPitch: false, level: false, fade: 0, sections: true, sort: 'new', delay: 0, join: false, hStats: true, hPresets: true, hRotation: true, hPlaylists: true, hNewest: true, keepVideo: true, videoEnd: true, syncVideo: false };
+const OPT_DEFAULTS = { autoTrim: true, speed: 1, keepPitch: false, level: false, fade: 0, sections: true, sort: 'new', delay: 0, join: false, hStats: true, hPresets: true, hRotation: true, hPlaylists: true, hNewest: true, keepVideo: true, videoEnd: true, syncVideo: false, glass: true, nameIt: true, improve: true };
 function cleanOpts(o) {
   const d = Object.assign({}, OPT_DEFAULTS); if (!o) return d;
-  ['autoTrim', 'keepPitch', 'level', 'sections', 'join', 'hStats', 'hPresets', 'hRotation', 'hPlaylists', 'hNewest', 'keepVideo', 'videoEnd', 'syncVideo'].forEach(k => { if (typeof o[k] === 'boolean') d[k] = o[k]; });
+  ['autoTrim', 'keepPitch', 'level', 'sections', 'join', 'hStats', 'hPresets', 'hRotation', 'hPlaylists', 'hNewest', 'keepVideo', 'videoEnd', 'syncVideo', 'glass', 'nameIt', 'improve'].forEach(k => { if (typeof o[k] === 'boolean') d[k] = o[k]; });
   if ([0, 3, 5, 10].indexOf(+o.delay) >= 0) d.delay = +o.delay;
   if ([0.75, 0.85, 1, 1.15, 1.25].indexOf(+o.speed) >= 0) d.speed = +o.speed;
   if ([0, 40, 120, 300].indexOf(+o.fade) >= 0) d.fade = +o.fade;
@@ -1412,6 +1631,7 @@ const track = id => S.tracks.find(t => t.id === id);
 const playlist = id => S.playlists.find(p => p.id === id);
 const plTracks = p => (p.tracks || []).map(track).filter(Boolean);
 try { const p = JSON.parse(localStorage.getItem('gymtapes.prefs') || '{}'); if (p.shuffle) S.shuffle = true; if (['off', 'all', 'one'].indexOf(p.loop) >= 0) S.loop = p.loop; if (p.lib === 'playlists') S.lib = 'playlists'; if (p.mini) S.mini = true; if (p.autoTrim === false) S.opt.autoTrim = false; } catch (e) { /* defaults */ }
+try { if (!localStorage.getItem('hp.v14')) { localStorage.setItem('hp.v14', '1'); if (!S.mini) { S.mini = true; savePrefs(); } } } catch (e) { /* fine */ }
 try { const o = JSON.parse(localStorage.getItem('gymtapes.opts') || 'null'); if (o) S.opt = cleanOpts(o); } catch (e) { /* defaults */ }
 S.optSig = JSON.stringify(S.opt);
 function savePrefs() { try { localStorage.setItem('gymtapes.prefs', JSON.stringify({ shuffle: S.shuffle, loop: S.loop, lib: S.lib, mini: S.mini })); } catch (e) { /* not kept */ } }
@@ -1446,7 +1666,7 @@ function toast(msg, o) {
 function errText(e) {
   switch (e && e.code) {
     case 'not_mp4': case 'not_audio': return 'Could not read this file. Use a video, or MP3, WAV or M4A audio.';
-    case 'not_backup': return 'That file is not an Ear Worm backup.';
+    case 'not_backup': return 'That file is not an EarWorm backup.';
     case 'no_convert': return 'This browser cannot convert this kind of audio yet. Videos and M4A files still work.';
     case 'convert_big': return 'This audio file is too big to convert on a phone. Try one under 150 MB.';
     case 'no_audio': return 'This video has no sound.';
@@ -1599,18 +1819,21 @@ function homeView() {
   }
   if (S.sel) return homeSelView();
   const o = S.opt, hr = new Date().getHours(), hello = (hr < 5 ? 'Up late' : hr < 12 ? 'Good morning' : hr < 18 ? 'Good afternoon' : 'Good evening') + (SYNC.sess && SYNC.username ? ', ' + esc(SYNC.username) : '');
-  const rot = S.home.rot.map(track).filter(Boolean), newest = S.tracks.slice(0, 5), liked = likedTracks();
+  const rot = S.home.rot.map(track).filter(Boolean), lately = S.home.recent.map(track).filter(Boolean).slice(0, 10), newest = S.tracks.slice(0, 5), liked = likedTracks();
   const card = (t, i) => {
     const n = S.plays[t.id] || 0, meta = i === 0 && t.id === S.home.rotFirst ? 'Last played' : n ? playsText(n) : fmt(playDur(t));
     return '<button class="rot' + (P.cur === t.id ? ' cur' : '') + '" data-key="' + esc(t.id) + '" style="--h:' + hueOf(t.id) + '" data-act="play" data-id="' + esc(t.id) + '" data-ctx="rot">' + trackCover(t, P.cur === t.id) +
       '<span class="tt"><span class="title">' + esc(t.title) + '</span><span class="meta">' + meta + '</span></span></button>';
   };
+  const recentTile = t => '<button class="tile' + (P.cur === t.id ? ' cur' : '') + '" data-key="' + esc(t.id) + '" style="--h:' + hueOf(t.id) + '" data-act="play" data-id="' + esc(t.id) + '" data-ctx="recent">' + trackCover(t, P.cur === t.id) +
+    '<span class="title">' + esc(t.title) + '</span><span class="meta">' + (S.plays[t.id] ? playsText(S.plays[t.id]) : fmt(playDur(t))) + '</span></button>';
   const plTile = p => '<button class="tile" data-key="' + esc(p.id) + '" data-act="pl-open" data-id="' + esc(p.id) + '">' + plCover(p) + '<span class="title">' + esc(p.name) + '</span><span class="meta">' + countText(plTracks(p).length) + '</span></button>';
   const likedTile = liked.length ? '<button class="tile" data-key="liked" data-act="pl-open" data-id="' + LIKED + '">' + likedCover() + '<span class="title">Liked</span><span class="meta">' + countText(liked.length) + '</span></button>' : '';
   return '<div class="hello"><div class="hello-row"><h2 class="page-t" id="hello">' + hello + '</h2>' + (store && store.canWrite && S.tracks.length > 1 ? '<button class="btn sm" id="homeSelect" data-act="sel-start">Select</button>' : '') + '</div><p class="count">' + countText(S.tracks.length) + ', ' + fmt(sumDur(S.tracks)) + ' of audio</p>' + statsChips() + '</div>' +
     '<div class="bar"><button class="btn primary wide big" data-act="shuffle-all">' + IC.shuffle + 'Shuffle everything</button><button class="btn wide" data-act="play-all">' + IC.play + 'Play all</button></div>' +
+    (o.hRotation && rot.length ? '<div class="rot-grid" id="rotGrid" role="group" aria-label="Your rotation">' + rot.map(card).join('') + '</div>' : '') +
     (o.hPresets ? presetsHome() : '') +
-    (o.hRotation && rot.length ? secHead('Your rotation') + '<div class="rot-grid" id="rotGrid">' + rot.map(card).join('') + '</div>' : '') +
+    (o.hRotation && lately.length > 2 ? secHead('Recently played') + '<div class="strip" id="recentStrip">' + lately.map(recentTile).join('') + '</div>' : '') +
     (o.hPlaylists ? secHead('Playlists', S.playlists.length ? '<button class="link" data-act="tab" data-tab="library" data-lib="playlists">See all</button>' : '') +
       (S.playlists.length || likedTile ? '<div class="strip" id="plStrip">' + likedTile + S.playlists.map(plTile).join('') + '</div>'
         : '<div class="hint-card"><p>Group uploads into sets, one for each kind of workout.</p><button class="btn sm" data-act="pl-new">' + IC.plus + 'New playlist</button></div>') : '') +
@@ -1734,9 +1957,9 @@ const SET_SECS = [
   { k: 'playback', name: 'Playback', sub: () => 'Speed, start delay, stop timer' },
   { k: 'sound', name: 'Sound', sub: () => 'Volume leveling, loop fade' },
   { k: 'uploads', name: 'Uploads and videos', sub: () => 'End clips, kept videos, join' },
-  { k: 'look', name: 'Look', sub: () => 'Background' },
+  { k: 'look', name: 'Look', sub: () => 'Background, glass effects' },
   { k: 'home', name: 'Home', sub: () => 'What shows on Home' },
-  { k: 'library', name: 'Library and storage', sub: () => 'Space used, recently deleted, clear library' },
+  { k: 'library', name: 'Library and storage', sub: () => (V14.persisted === true ? 'Protected on this device, space used' : V14.persisted === false ? 'Not protected yet, space used' : 'Space used') + ', recently deleted, clear library' },
   { k: 'backup', name: 'Backup', sub: () => 'Back up or restore your library' }
 ];
 const setSecs = () => SET_SECS.filter(s => !s.on || s.on());
@@ -1763,15 +1986,18 @@ function secBody(k, all) {
       setRow('Keep original videos', KEEP_VID_SUB, swBtn('keepVideo', 'Keep original videos')) +
       setRow('Cut end clips from videos', END_VID_SUB, swBtn('videoEnd', 'Cut end clips from videos')) +
       '<div class="set col"><button class="btn sm" data-act="trim-all">Check every upload for an end clip</button><p class="sub" id="trimAllStatus" aria-live="polite">' + esc(trimAllMsg) + '</p></div>' +
-      setRow('Join uploads', 'Adds Join to the options of each upload, to stitch two or more into one that loops as a whole.', swBtn('join', 'Join uploads')));
-  if (k === 'look') return group(t('Look'), setCol('Background', 'Pick a color, or tap the last circle to use a photo of your own.', bgSwatches()));
+      setRow('Join uploads', 'Adds Join to the options of each upload, to stitch two or more into one that loops as a whole.', swBtn('join', 'Join uploads')) +
+      setRow('Name new uploads', 'Right after an upload, ask what to call it.', swBtn('nameIt', 'Name new uploads')) +
+      setRow('First-open guide', 'How to get videos into EarWorm, step by step.', '<button class="btn sm" id="guideShow" data-act="guide-show">Show</button>'));
+  if (k === 'look') return group(t('Look'), setCol('Background', 'Pick a color, or tap the last circle to use a photo of your own.', bgSwatches()) +
+    setRow('Glass effects', 'Frosted glass on the tab bar, the player and the buttons over covers. Turn it off if it feels slow or hard to read.', swBtn('glass', 'Glass effects')));
   if (k === 'home') return group(t('Home'),
       setRow('Stats', 'Your streak and time listened, under the greeting.', swBtn('hStats', 'Show stats on Home')) +
       setRow('Presets', '', swBtn('hPresets', 'Show presets on Home')) +
-      setRow('Your rotation', 'What you played last and what you play most, in one small grid.', swBtn('hRotation', 'Show Your rotation on Home')) +
+      setRow('Your rotation', 'Quick picks of what you played last and play most, and Recently played with big covers.', swBtn('hRotation', 'Show Your rotation on Home')) +
       setRow('Playlists', '', swBtn('hPlaylists', 'Show playlists on Home')) +
       setRow('Newest uploads', '', swBtn('hNewest', 'Show newest uploads on Home')));
-  if (k === 'library') return group(t('Library'), '<div class="set"><div class="grow"><div class="set-t">' + countText(S.tracks.length) + ', ' + S.playlists.length + (S.playlists.length === 1 ? ' playlist' : ' playlists') + '</div><p class="sub" id="setStorage">' + esc(storageText()) + '</p></div></div>' + binRow()) +
+  if (k === 'library') return group(t('Library'), '<div class="set"><div class="grow"><div class="set-t">' + countText(S.tracks.length) + ', ' + S.playlists.length + (S.playlists.length === 1 ? ' playlist' : ' playlists') + '</div><p class="sub" id="setStorage">' + esc(storageText()) + '</p></div></div>' + protectRow() + binRow()) +
       (store && store.kind === 'local' ? group('', '<div class="set"><div class="grow"><div class="set-t">Clear library on this device</div><p class="sub">' +
         (SYNC.sess ? 'Deletes everything here and signs this device out. Your cloud copy and your other devices keep it all.' : 'Deletes every upload, video, playlist, like and stat on this device for good.') +
         '</p></div><button class="btn sm warn" id="clearBtn" data-act="clear-lib">Clear</button></div>') : '');
@@ -1799,7 +2025,7 @@ const SET_WORDS = {
   'Stop timer': 'sleep timer minutes', 'Stop after loops': 'repeat count plays times loop', 'Play saved sections': 'section part trim',
   'Volume leveling': 'loudness normalize loud quiet volume', 'Loop fade': 'fade crossfade click pop', 'Remove end clips': 'tiktok logo outro ending chime watermark',
   'Keep original videos': 'video save space', 'Cut end clips from videos': 'video ending outro tiktok', 'Check every upload for an end clip': 'scan fix old end clip tiktok',
-  'Join uploads': 'merge combine stitch', 'Background': 'theme color colour wallpaper dark light mode photo look', 'Stats': 'streak time listened',
+  'Join uploads': 'merge combine stitch', 'Name new uploads': 'rename title name ask', 'First-open guide': 'help tutorial how start guide intro', 'Glass effects': 'glass blur frosted transparent liquid see through', 'Background': 'theme color colour wallpaper dark light mode photo look', 'Stats': 'streak time listened',
   'Your rotation': 'recent most played', 'Newest uploads': 'recent', 'Recently deleted': 'trash bin restore undo deleted', 'Clear library on this device': 'wipe reset erase delete everything',
   'Back up library': 'backup export save zip', 'Restore from backup': 'import restore backup', 'Sync your library': 'account sign in log in login create account sync',
   'Sync': 'sign out log out logout sync now cloud', 'Sync videos': 'video cloud', 'Two-step sign-in': '2fa two factor authenticator code mfa security keeper',
@@ -1832,9 +2058,9 @@ function findResults() {
 function setFindBody() {
   if (S.setQ && S.setQ.trim()) return findResults();
   const secs = setSecs();
-  if (isPC()) { const all = [QUICK].concat(secs), cur = all.find(s => s.k === S.setSec) || all[0]; return '<h2 class="sec-t">' + cur.name + '</h2>' + (cur.k === 'quick' ? group('', quickBody()) : secBody(cur.k, false)); }
-  return group('Quick settings', quickBody()) +
-    '<section class="group"><h3>All settings</h3><div class="card set-list" id="setList">' + secs.map(s => '<button class="set-go" id="set-' + s.k + '" data-act="set-sec" data-sec="' + s.k + '"><span class="set-ic">' + svgIc(SET_IC[s.k]) + '</span><span class="grow"><span class="set-t">' + s.name + '</span><span class="sub">' + esc(s.sub()) + '</span></span>' + IC.chev + '</button>').join('') + '</div></section>';
+  if (isPC()) { const all = [QUICK].concat(secs), cur = all.find(s => s.k === S.setSec) || all[0]; return (cur.k === 'quick' ? backupNudge() : '') + '<h2 class="sec-t">' + cur.name + '</h2>' + (cur.k === 'quick' ? group('', quickBody()) + aboutBlock() : secBody(cur.k, false)); }
+  return backupNudge() + group('Quick settings', quickBody()) +
+    '<section class="group"><h3>All settings</h3><div class="card set-list" id="setList">' + secs.map(s => '<button class="set-go" id="set-' + s.k + '" data-act="set-sec" data-sec="' + s.k + '"><span class="set-ic">' + svgIc(SET_IC[s.k]) + '</span><span class="grow"><span class="set-t">' + s.name + '</span><span class="sub">' + esc(s.sub()) + '</span></span>' + IC.chev + '</button>').join('') + '</div></section>' + aboutBlock();
 }
 /* on a phone: search, quick settings and a list of pages, each opening with a back arrow; on a computer: the pages down the side */
 function settingsView() {
@@ -1861,6 +2087,7 @@ function flashSetting(find) {
 }
 let viewKey = '', dragOn = false, renderDue = false;
 function render() {
+  if (!GUIDE.open && !S.tracks.length) setTimeout(maybeGuide, 0);
   NAV.forEach(k => $('#tab' + k.charAt(0).toUpperCase() + k.slice(1)).setAttribute('aria-selected', S.tab === k));
   $('#upDot').hidden = !upBusy();
   if (!S.ready) return;
@@ -1975,6 +2202,7 @@ function setOpt(k, v) {
   optChanged(k);
 }
 function optChanged(k) {
+  if (k === 'improve' && S.opt.improve) weeklyPing();
   if (k === 'speed' || k === 'keepPitch') applyRate();
   if (k === 'syncVideo') soon(200);
   if (k === 'level' || k === 'fade') { if (track(P.cur) && engineFor() !== audio) reloadKeep(); else applyGain(); if (k === 'level' && S.opt.level) levelAll(); }
@@ -2066,6 +2294,7 @@ function sheet(html, ctx) {
   const f = $('#sheetPanel [data-focus]'); if (f) setTimeout(() => { try { f.focus(); if (f.select) f.select(); } catch (e) { /* fine */ } }, 60);
 }
 function closeSheet() {
+  setTimeout(maybeGuide, 400); setTimeout(maybeNews, 700);
   if (sheetCtx && sheetCtx.previewUrl) URL.revokeObjectURL(sheetCtx.previewUrl);
   sheetCtx = null; const s = $('#sheet'); if (s.hidden) return;
   const done = () => { s.hidden = true; s.classList.remove('out'); $('#sheetPanel').innerHTML = ''; };
@@ -2397,6 +2626,7 @@ function progress() {
     w.setAttribute('aria-valuenow', pct);
   });
   $('#tCur').textContent = a; $('#tDur').textContent = b; $('#fCur').textContent = a; $('#fDur').textContent = b;
+  const pp = $('#pProg'), gp = $('#gymProg'); if (pp) pp.style.width = (f * 100) + '%'; if (gp && S.full) gp.style.width = (f * 100) + '%';
 }
 function chips() {
   const out = [];
@@ -2433,11 +2663,11 @@ function updatePlayer() {
   all('.js-loop', b => b.setAttribute('aria-pressed', S.loop !== 'off'));
   all('.js-loop-lab', s => { s.textContent = S.loop === 'one' ? 'Loop one' : S.loop === 'all' ? 'Loop all' : 'Loop off'; });
   all('.js-loop-one', p => p.toggleAttribute('hidden', S.loop !== 'one'));
-  chips();
+  chips(); v14Player(t);
   document.documentElement.style.setProperty('--nav-h', (isPC() ? 0 : $('#nav').offsetHeight) + 'px');
-  document.documentElement.style.setProperty('--player-h', t ? el.offsetHeight + 'px' : '0px');
+  document.documentElement.style.setProperty('--player-h', t && !isPC() ? el.offsetHeight + 'px' : '0px');
   progress();
-  if (S.full && t) drawQueue();
+  if (t && (S.full || isPC())) drawQueue();
   try { if ('mediaSession' in navigator) navigator.mediaSession.playbackState = playing ? 'playing' : (t ? 'paused' : 'none'); } catch (e) { /* optional */ }
 }
 
@@ -2446,13 +2676,14 @@ let fullTimer = 0;
 function openFull() {
   if (!track(P.cur) || S.full) return;
   const f = $('#full'); clearTimeout(fullTimer); f.classList.remove('out');
-  S.full = true; f.hidden = false; f.scrollTop = 0; updatePlayer();
+  S.full = true; vtSwap(() => { f.hidden = false; f.scrollTop = 0; f.classList.remove('gym'); updatePlayer(); }, true);
 }
 function closeFull(now) {
   if (!S.full) return; S.full = false;
-  const f = $('#full'), done = () => { f.hidden = true; f.classList.remove('out'); };
+  const f = $('#full'), done = () => { f.hidden = true; f.classList.remove('out', 'gym'); };
   clearTimeout(fullTimer);
   if (now === true || calm) return done();
+  if (vtOK()) return vtSwap(done, false);
   f.classList.add('out'); fullTimer = setTimeout(done, 200);
 }
 const QUEUE_SHOWN = 40;
@@ -2465,6 +2696,7 @@ function drawQueue() {
     '<button class="row-hit" data-act="q-jump" data-id="' + esc(t.id) + '">' + trackCover(t) + '<span class="tt"><span class="title">' + esc(t.title) + '</span><span class="meta">' + fmt(playDur(t)) + '</span></span></button>' +
     '<button class="more" data-act="q-remove" data-id="' + esc(t.id) + '" aria-label="Take ' + esc(t.title) + ' out of up next">' + IC.x + '</button></div>').join('')
     : '<p class="q-empty">' + (S.loop === 'one' ? 'This one keeps looping.' : S.loop === 'all' && P.order.length > 1 ? 'Last one. After it, the list starts over.' : 'Nothing else lined up.') + '</p>');
+  if (isPC()) { $('#pNextNote').textContent = $('#fNextNote').textContent; paint($('#pQueue'), $('#fQueue').innerHTML); }
 }
 function queueChanged() { updatePlayer(); preloadNext(); saveSession(true); }
 function playNext(id) {
@@ -2574,7 +2806,7 @@ function artwork(t) {
 }
 function mediaMeta(t) {
   if (!('mediaSession' in navigator) || !window.MediaMetadata) return;
-  try { navigator.mediaSession.metadata = new MediaMetadata({ title: t.title, artist: 'Ear Worm', album: P.label, artwork: artwork(t) }); } catch (e) { /* optional */ }
+  try { navigator.mediaSession.metadata = new MediaMetadata({ title: t.title, artist: 'EarWorm', album: P.label, artwork: artwork(t) }); } catch (e) { /* optional */ }
   bindMedia();
 }
 /* lock screen and headphone buttons. Registered again each time playback starts, and the 10 second skips are
@@ -3081,7 +3313,7 @@ async function syncBoot() {
     /* On iPhone an email link opens in Safari, which keeps its own storage apart from the home screen app. There the link only
        confirms the email or sets a new password; signing in and syncing happen in the app, so Safari never downloads the library. */
     if (!inApp() && link.type === 'recovery') { SYNC.recovery = link.at; if (SYNC.sess) syncStart(); render(); newPwSheet(); return; }
-    if (!inApp()) { if (SYNC.sess) syncStart(); render(); toast('Email confirmed. Now sign in in the Ear Worm app.'); return; }
+    if (!inApp()) { if (SYNC.sess) syncStart(); render(); toast('Email confirmed. Now sign in in the EarWorm app.'); return; }
     try {
       const u = await sbFetch('/auth/v1/user', { headers: { Authorization: 'Bearer ' + link.at } });
       saveSess({ at: link.at, rt: link.rt, exp: link.exp, uid: u.id, email: u.email });
@@ -3108,7 +3340,7 @@ function syncText() {
   if (SYNC.missing.size) t += '. ' + SYNC.missing.size + (SYNC.missing.size === 1 ? ' file was' : ' files were') + ' not found in the cloud';
   return t + '.';
 }
-function cloudText() { if (!SYNC.st) return ''; let b = 0; SYNC.st.up.forEach(id => { b += store.blobSize(id); }); return 'About ' + fmtBytes(b) + ' of 1 GB cloud space used'; }
+function cloudText() { if (!SYNC.st) return ''; let b = 0; SYNC.st.up.forEach(id => { b += store.blobSize(id); }); const tb = trashCloudBytes(); return 'About ' + fmtBytes(b) + ' of 1 GB cloud space used' + (tb ? ', ' + fmtBytes(tb) + ' of it in Recently deleted' : ''); }
 function syncShow() {
   const a = document.getElementById('syncStatus'); if (a) a.textContent = syncText();
   const b = document.getElementById('syncStorage'); if (b) b.textContent = cloudText();
@@ -3171,7 +3403,7 @@ function askSync() {
   setTimeout(() => {
     if (SYNC.sess || sheetOpen() || !$('#editor').hidden || VID.open || S.full) return;
     try { localStorage.setItem('hp.syncAsked', '1'); } catch (e) { /* asked anyway */ }
-    sheet('<div class="ask-head"><span class="brand-ic"><svg viewBox="0 0 100 100" aria-hidden="true"><rect width="100" height="100" fill="#17121F"/><g transform="translate(5 0)"><path d="M16 62 C24 36 36 36 42 54 S60 74 70 44" fill="none" stroke="#C8F135" stroke-width="13" stroke-linecap="round"/><path d="M16 62 C24 36 36 36 42 54 S60 74 70 44" fill="none" stroke="#A6CF17" stroke-width="13" stroke-dasharray="1.5 6.5" stroke-dashoffset="-4"/><circle cx="70" cy="44" r="11" fill="#C8F135"/><circle cx="73" cy="40.8" r="4.3" fill="#FFFFFF"/><circle cx="74" cy="40.2" r="2.2" fill="#17121F"/></g></svg></span><h2>Sync your library across your devices</h2><p class="sub">Make a free account and your uploads, playlists and likes show up on your phone and your computer. Or keep using Ear Worm on this device only.</p></div>' +
+    sheet('<div class="ask-head"><span class="brand-ic"><svg viewBox="0 0 100 100" aria-hidden="true"><rect width="100" height="100" fill="#17121F"/><g transform="translate(5 0)"><path d="M16 62 C24 36 36 36 42 54 S60 74 70 44" fill="none" stroke="#C8F135" stroke-width="13" stroke-linecap="round"/><path d="M16 62 C24 36 36 36 42 54 S60 74 70 44" fill="none" stroke="#A6CF17" stroke-width="13" stroke-dasharray="1.5 6.5" stroke-dashoffset="-4"/><circle cx="70" cy="44" r="11" fill="#C8F135"/><circle cx="73" cy="40.8" r="4.3" fill="#FFFFFF"/><circle cx="74" cy="40.2" r="2.2" fill="#17121F"/></g></svg></span><h2>Sync your library across your devices</h2><p class="sub">Make a free account and your uploads, playlists and likes show up on your phone and your computer. Or keep using EarWorm on this device only.</p></div>' +
       '<button class="btn primary" id="askNew" data-act="acct-new">Create account</button><button class="btn" id="askIn" data-act="acct-in">Sign in</button><button class="link-btn" id="askLater" data-act="sheet-close">Not now</button>', { kind: 'ask' });
   }, 900);
 }
@@ -3212,7 +3444,7 @@ async function mfaStart() {
   try {
     const u = await sbFetch('/auth/v1/user', { auth: true });
     for (const f of (u && u.factors) || []) if (f.status !== 'verified') await sbFetch('/auth/v1/factors/' + f.id, { method: 'DELETE', auth: true }).catch(() => {});      // an earlier setup that was not finished
-    const j = await sbFetch('/auth/v1/factors', { method: 'POST', auth: true, json: { factor_type: 'totp', issuer: 'Ear Worm', friendly_name: 'Ear Worm ' + Math.random().toString(36).slice(2, 8) } });
+    const j = await sbFetch('/auth/v1/factors', { method: 'POST', auth: true, json: { factor_type: 'totp', issuer: 'EarWorm', friendly_name: 'EarWorm ' + Math.random().toString(36).slice(2, 8) } });
     if (!sheetCtx || sheetCtx.kind !== 'mfa') { sbFetch('/auth/v1/factors/' + j.id, { method: 'DELETE', auth: true }).catch(() => {}); return; }
     mfaSetupSheet({ id: j.id, qr: j.totp && j.totp.qr_code, secret: j.totp && j.totp.secret, uri: j.totp && j.totp.uri });
   } catch (e) { if (sheetCtx && sheetCtx.kind === 'mfa') closeSheet(); toast(authText(e)); }
@@ -3220,7 +3452,7 @@ async function mfaStart() {
 function mfaSetupSheet(f) {
   const key = String(f.secret || '').replace(/(.{4})/g, '$1 ').trim();
   sheet('<h2>Turn on two-step sign-in</h2><p class="sub">From now on, signing in also asks for a 6-digit code from an authenticator app, like Keeper or the Passwords app on iPhone.</p>' +
-    '<ol class="mfa-steps"><li>Add Ear Worm to the app: scan this code with your phone, or on iPhone tap <b>Open in authenticator</b>. You can also copy the setup key into Keeper.</li><li>Type the 6-digit code the app shows for Ear Worm.</li></ol>' +
+    '<ol class="mfa-steps"><li>Add EarWorm to the app: scan this code with your phone, or on iPhone tap <b>Open in authenticator</b>. You can also copy the setup key into Keeper.</li><li>Type the 6-digit code the app shows for EarWorm.</li></ol>' +
     (f.qr ? '<div class="mfa-qr"><img id="mfaQr" alt="Setup code to scan with your authenticator app" src="' + esc(qrSrc(f.qr)) + '"></div>' : '') +
     '<div class="mfa-key"><span>Setup key</span><code id="mfaKey">' + esc(key) + '</code></div>' +
     '<div class="pair">' + (f.uri ? '<a class="btn sm" id="mfaOpen" href="' + esc(f.uri) + '">Open in authenticator</a>' : '') + '<button type="button" class="btn sm" id="mfaCopy" data-act="mfa-copy">Copy setup key</button></div>' +
@@ -3228,7 +3460,7 @@ function mfaSetupSheet(f) {
     '<button class="btn" data-act="mfa-cancel">Cancel</button>', { kind: 'mfa', factor: f.id, secret: f.secret });
 }
 function codeSheet(signin) {
-  sheet('<h2>Enter your code</h2><p class="sub">' + (signin ? 'Two-step sign-in is on. ' : 'Two-step sign-in is on for your account. ') + 'Open your authenticator app and type the 6-digit code for Ear Worm. If you set it up before the name changed, it is listed as HighestPeak.</p>' +
+  sheet('<h2>Enter your code</h2><p class="sub">' + (signin ? 'Two-step sign-in is on. ' : 'Two-step sign-in is on for your account. ') + 'Open your authenticator app and type the 6-digit code for EarWorm. If you set it up before the name changed, it may be listed as HighestPeak or Ear Worm.</p>' +
     '<form class="auth" data-form="mfacode"><input type="text" id="mfaCode" name="code" inputmode="numeric" autocomplete="one-time-code" placeholder="6-digit code" aria-label="6-digit code" required data-focus><p class="sub auth-msg" id="authMsg" aria-live="polite"></p><button type="submit" class="btn primary" id="authGo">' + (signin ? 'Sign in' : 'Continue') + '</button></form>' +
     '<button class="btn" data-act="mfa-code-cancel">Cancel</button>', { kind: 'mfacode' });
 }
@@ -3244,7 +3476,7 @@ function wordSheet(title, body, word, label, form, id) {
     '<p class="sub auth-msg" id="authMsg" aria-live="polite"></p><button type="submit" class="btn danger" id="authGo" disabled>' + label + '</button></form><button class="btn" data-act="sheet-close">Cancel</button>', { kind: form });
 }
 function delAcctSheet() {
-  wordSheet('Delete account', 'This deletes your Ear Worm account for good: your username, your sign-in, and the copy of your library in the cloud. The library on this device stays here, and your other devices keep their copies, but nothing syncs any more. Type DELETE to confirm.', 'DELETE', 'Delete account', 'delacct', 'delConfirm');
+  wordSheet('Delete account', 'This deletes your EarWorm account for good: your username, your sign-in, and the copy of your library in the cloud. The library on this device stays here, and your other devices keep their copies, but nothing syncs any more. Type DELETE to confirm.', 'DELETE', 'Delete account', 'delacct', 'delConfirm');
 }
 function unsynced() {
   if (!SYNC.on || !SYNC.st) return 0;
@@ -3340,7 +3572,7 @@ function binRow() {
 function binSheet() {
   const list = S.trash.slice().sort((a, b) => (b.trashed || 0) - (a.trashed || 0));
   const left = t => Math.max(0, Math.ceil(((t.trashed || 0) + BIN_MS - Date.now()) / 86400000));
-  sheet('<h2>Recently deleted</h2><p class="sub">Deleted uploads stay here for ' + BIN_DAYS + ' days, then they are gone for good' + (SYNC.on ? ' on every device' : '') + '.</p>' +
+  sheet('<h2>Recently deleted</h2><p class="sub">Deleted uploads stay here for ' + BIN_DAYS + ' days, then they are gone for good' + (SYNC.on ? ' on every device' : '') + '.</p>' + binFree() +
     (list.length ? '<div class="opts">' + list.map(t => '<div class="opt static bin-row" data-key="' + esc(t.id) + '">' + trackCover(t) + '<span class="grow"><span class="bin-t">' + esc(t.title) + '</span><span class="sub">' + (left(t) <= 1 ? 'Gone within a day' : left(t) + ' days left') + '</span></span>' +
       '<button class="btn xs" data-act="bin-restore" data-id="' + esc(t.id) + '">Put back</button><button class="btn xs warn" data-act="bin-purge" data-id="' + esc(t.id) + '">Delete</button></div>').join('') + '</div><button class="btn warn" data-act="bin-empty">Delete all for good</button>'
       : '<p class="sub">Nothing here.</p>') +
@@ -3385,7 +3617,7 @@ document.addEventListener('contextmenu', e => { if (LP.t || Date.now() - LP.fire
 document.addEventListener('keydown', e => { if (e.key === 'Escape' && S.sel && !sheetOpen() && !S.full && !VID.open) { S.sel = null; render(); } });
 document.addEventListener('input', e => {
   const el = e.target; if (!el || el.id !== 'setQ') return;
-  S.setQ = el.value; const out = document.getElementById('setFindOut') || document.getElementById('setMain'); if (out) paint(out, setFindBody());
+  S.setQ = el.value; const out = document.getElementById('setFindOut') || document.getElementById('setMain'); if (out) paint(out, setFindBody()); sideCur();
 });
 /* Quick actions on the computer app's icon open the app with ?go=… */
 const GO = (() => { try { const g = new URLSearchParams(location.search).get('go'); if (g) history.replaceState(null, '', location.pathname + location.hash); return g; } catch (e) { return null; } })();
@@ -3398,6 +3630,297 @@ if (GO) {
     else if (GO === 'shuffle' && S.tracks.length) ACT['shuffle-all']();
   };
   setTimeout(() => run(0), 0);
+}
+
+/* ----- V14: the redesign's motion and gestures ----- */
+const V14 = { touching: false, lastTouch: 0, y: 0, skip: 0 };
+function v14Player(t) {
+  document.body.classList.toggle('has-np', !!t && isPC());
+  document.body.classList.toggle('no-glass', S.opt.glass === false);
+}
+/* on a computer, the Settings side list shows no section as open while searching */
+function sideCur() {
+  const q = !!(S.setQ && S.setQ.trim()), cur = S.setSec || 'quick';
+  all('.set-side button[data-sec]', b => b.setAttribute('aria-current', String(!q && b.dataset.sec === cur)));
+}
+/* a tiny tap felt in the hand on swipes and likes (vibration where it exists, the iPhone switch tap where it does not) */
+const buzz = (() => {
+  let lab = null;
+  return () => {
+    try {
+      if (navigator.vibrate) { navigator.vibrate(10); return; }
+      if (!/iP(hone|ad|od)/.test(navigator.userAgent)) return;
+      if (!lab) { lab = document.createElement('label'); lab.setAttribute('aria-hidden', 'true'); lab.style.cssText = 'position:fixed;left:-99px;top:0;width:1px;height:1px;overflow:hidden;opacity:0';
+        const i = document.createElement('input'); i.type = 'checkbox'; i.setAttribute('switch', ''); i.tabIndex = -1; lab.appendChild(i); document.body.appendChild(lab); }
+      lab.click();
+    } catch (e) { /* no buzz */ }
+  };
+})();
+/* opening and closing the big player: the mini player's cover grows into the big one */
+const vtOK = () => !!document.startViewTransition && !calm && !isPC();
+function vtSwap(update, open) {
+  if (!vtOK()) return update();
+  const big = () => $('#fCover .cover'), mini = () => $('#pCover .cover'), a = open ? mini() : big();
+  if (a) a.style.viewTransitionName = 'np-cover';
+  document.documentElement.classList.add('vt-on');
+  let tr;
+  try { tr = document.startViewTransition(() => { if (a) a.style.viewTransitionName = ''; update(); const b = open ? big() : mini(); if (b) b.style.viewTransitionName = 'np-cover'; }); }
+  catch (e) { if (a) a.style.viewTransitionName = ''; document.documentElement.classList.remove('vt-on'); return update(); }
+  tr.finished.catch(() => {}).then(() => { all('#pCover .cover, #fCover .cover', c => { c.style.viewTransitionName = ''; }); document.documentElement.classList.remove('vt-on'); });
+}
+/* phones: scrolling down with a finger shrinks the tab bar, scrolling up or reaching the top brings it back */
+document.addEventListener('touchstart', () => { V14.touching = true; }, { passive: true });
+document.addEventListener('touchend', () => { V14.touching = false; V14.lastTouch = Date.now(); }, { passive: true });
+window.addEventListener('scroll', () => {
+  const y = window.scrollY, dy = y - V14.y; V14.y = y;
+  if (isPC() || S.full) return;
+  if (y < 80) { document.body.classList.remove('nav-min'); return; }
+  if (!(V14.touching || Date.now() - V14.lastTouch < 1200)) return;
+  if (dy > 6) document.body.classList.add('nav-min'); else if (dy < -6) document.body.classList.remove('nav-min');
+}, { passive: true });
+document.addEventListener('click', e => { if (e.target.closest && e.target.closest('#nav')) document.body.classList.remove('nav-min'); }, true);
+/* computers: scrollbars show while scrolling, then fade */
+let scrollFade = 0;
+document.addEventListener('scroll', () => { if (!isPC()) return; document.documentElement.classList.add('scrolling'); clearTimeout(scrollFade); scrollFade = setTimeout(() => document.documentElement.classList.remove('scrolling'), 900); }, { passive: true, capture: true });
+/* the tap that ends a swipe or a drag is not also a tap */
+document.addEventListener('click', e => { if (V14.skip && Date.now() - V14.skip < 400) { V14.skip = 0; e.preventDefault(); e.stopImmediatePropagation(); } }, true);
+/* phones: swipe the mini player left for the next upload, right for the one before, up for the big player */
+(() => {
+  const g = { on: false, moved: false, dir: '', x: 0, y: 0, el: null };
+  document.addEventListener('touchstart', e => {
+    const hit = e.target.closest && e.target.closest('#player .now-open'); if (!hit || isPC() || e.touches.length > 1) return;
+    g.on = true; g.moved = false; g.dir = ''; g.x = e.touches[0].clientX; g.y = e.touches[0].clientY; g.el = $('#player .player-in');
+  }, { passive: true });
+  document.addEventListener('touchmove', e => {
+    if (!g.on) return; const dx = e.touches[0].clientX - g.x, dy = e.touches[0].clientY - g.y;
+    if (!g.moved) { if (Math.abs(dx) < 8 && Math.abs(dy) < 8) return; g.dir = Math.abs(dx) > Math.abs(dy) ? 'x' : 'y'; g.moved = true; }
+    g.el.style.transition = 'none';
+    if (g.dir === 'x') { g.el.style.transform = 'translateX(' + Math.round(dx * 0.6) + 'px)'; g.el.style.opacity = String(1 - Math.min(0.5, Math.abs(dx) / 400)); }
+    else if (dy < 0) g.el.style.transform = 'translateY(' + Math.round(Math.max(-40, dy * 0.4)) + 'px)';
+  }, { passive: true });
+  document.addEventListener('touchend', e => {
+    if (!g.on) return; g.on = false; if (!g.moved) return;
+    const t = e.changedTouches[0], dx = t.clientX - g.x, dy = t.clientY - g.y, el = g.el;
+    V14.skip = Date.now();
+    el.style.transition = 'transform .32s cubic-bezier(.2,.9,.25,1.2), opacity .32s'; el.style.transform = ''; el.style.opacity = '';
+    setTimeout(() => { el.style.transition = ''; }, 340);
+    if (g.dir === 'x' && Math.abs(dx) > 70) { buzz(); if (dx < 0) next(false); else prev(); }
+    else if (g.dir === 'y' && dy < -50) openFull();
+  }, { passive: true });
+})();
+/* the big player's cover: one tap for gym mode, two taps to like; in gym mode any tap brings the controls back */
+function likeBurst() {
+  const t = track(P.cur); if (!t || !store || !store.canWrite) return;
+  if (!isLiked(t)) toggleLike(t.id);
+  const c = $('#fCover'), h = document.createElement('span'); h.className = 'burst'; h.setAttribute('aria-hidden', 'true'); h.innerHTML = IC.heart;
+  c.appendChild(h); setTimeout(() => h.remove(), 850); buzz();
+}
+(() => {
+  let wait = 0, last = 0;
+  document.addEventListener('click', e => {
+    if (!S.full) return; const f = $('#full');
+    if (f.classList.contains('gym')) { if (f.contains(e.target)) { e.preventDefault(); e.stopImmediatePropagation(); f.classList.remove('gym'); } return; }
+    if (!(e.target.closest && e.target.closest('#fCover'))) return;
+    const now = Date.now();
+    if (now - last < 320) { clearTimeout(wait); last = 0; likeBurst(); return; }
+    last = now; clearTimeout(wait); wait = setTimeout(() => { if (S.full) { f.classList.add('gym'); f.scrollTop = 0; } }, 320);
+  }, true);
+})();
+
+/* ----- V14: the first-open guide, with a sample beat to play with ----- */
+const GUIDE = { open: false, step: 0 };
+const gIc = (d, fill) => '<svg width="16" height="16" viewBox="0 0 24 24" fill="' + (fill ? 'currentColor' : 'none') + '" stroke="' + (fill ? 'none' : 'currentColor') + '" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">' + d + '</svg>';
+const G_STEPS = [
+  { t: 'Save the video to your phone', p: 'In the app you are watching, tap <b>Share</b>, then <b>Save video</b> or <b>Download</b>. Screen recordings and clips already in your camera roll work too.',
+    art: '<div class="g-phone" aria-hidden="true"><div class="g-vid"></div><span class="g-share">' + gIc('<path d="M12 3v12M7 8l5-5 5 5M5 14v5a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2v-5"/>') + '</span><div class="g-sheet"><span class="gh"></span>' +
+      '<div class="g-row hit">' + gIc('<path d="M12 4v11M7 10l5 5 5-5M5 20h14"/>') + 'Save video<span class="g-tap" style="right:18px;top:4px"></span></div><div class="g-row">' + gIc('<rect x="8" y="8" width="12" height="12" rx="2"/><path d="M4 16V6a2 2 0 0 1 2-2h10"/>') + 'Copy link</div><div class="g-row">More</div></div></div>' },
+  { t: 'Upload it to EarWorm', p: 'Tap <b>Upload</b> and pick the video from Photos or Files. EarWorm keeps the sound and cuts off the app logo and chime at the end.',
+    art: '<div class="g-phone" aria-hidden="true"><span class="g-h">Upload</span><div class="g-up"><span class="g-plus">' + gIc('<path d="M12 5v14M5 12h14"/>') + '</span><span class="g-tap" style="left:calc(50% - 15px);top:calc(50% - 15px)"></span></div><div class="g-thumbs"><i></i><i></i><i></i></div></div>' },
+  { t: 'Loop it your way', p: 'Play it on repeat, keep just the part you want, and make a playlist for each workout. Try it with a beat made for you.',
+    art: '<div class="g-phone" aria-hidden="true"><span class="g-h">Now playing</span><div class="g-wave">' + '<i style="height:40%"></i><i style="height:70%"></i><i style="height:55%"></i><i style="height:90%"></i><i style="height:60%"></i><i style="height:80%"></i><i style="height:45%"></i><i style="height:75%"></i><i style="height:50%"></i><i style="height:85%"></i>' + '</div>' +
+      '<div class="g-mini"><b></b><span>Sample beat</span><span class="g-loop">' + gIc('<path d="M17 2l3 3-3 3M4 11V9a4 4 0 0 1 4-4h12M7 22l-3-3 3-3M20 13v2a4 4 0 0 1-4 4H4"/>') + '</span></div></div>' }
+];
+const G_WORKS = '<div class="g-works"><span>' + gIc('<rect x="3" y="6" width="13" height="12" rx="2"/><path d="m16 10 5-3v10l-5-3z"/>') + 'Saved videos</span><span>' + gIc('<circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="4"/>') + 'Screen recordings</span>' +
+  '<span>' + gIc('<rect x="9" y="3" width="6" height="11" rx="3"/><path d="M5 11a7 7 0 0 0 14 0M12 18v3"/>') + 'Voice memos</span><span>' + gIc('<path d="M9 18V5l11-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="17" cy="16" r="3"/>') + 'MP3, WAV, M4A</span></div>';
+const guided = () => { try { return localStorage.getItem('hp.guided') === '1'; } catch (e) { return true; } };
+function maybeGuide() {
+  if (GUIDE.open || window.__HP_QUIET || !S.ready || S.tracks.length || guided() || !store || !store.canWrite || SYNC.sess || sheetOpen() || S.full || VID.open) return;
+  let asked = true; try { asked = localStorage.getItem('hp.syncAsked') === '1'; } catch (e) { /* asked */ }
+  if (asked) openGuide();
+}
+function openGuide() { GUIDE.open = true; GUIDE.step = 0; drawGuide(); }
+function drawGuide() {
+  let g = $('#guide');
+  if (!g) { g = document.createElement('section'); g.id = 'guide'; g.className = 'guide'; g.setAttribute('role', 'dialog'); g.setAttribute('aria-label', 'Getting started'); document.body.appendChild(g); }
+  const n = GUIDE.step, st = G_STEPS[n], last = n === G_STEPS.length - 1;
+  g.innerHTML = '<div class="g-in"><div class="g-top"><div class="g-dots" aria-label="Step ' + (n + 1) + ' of ' + G_STEPS.length + '">' + G_STEPS.map((x, i) => '<i class="' + (i === n ? 'on' : '') + '"></i>').join('') + '</div>' +
+    '<button class="btn sm" id="guideSkip" data-act="guide-skip">Skip</button></div>' + st.art + '<h2 class="g-t" id="guideTitle">' + st.t + '</h2><p class="g-p">' + st.p + '</p>' + (n === 0 ? G_WORKS : '') +
+    '<div class="g-acts">' + (last ? '<button class="btn primary" id="guideSample" data-act="guide-sample">Try the sample beat</button><button class="link-btn" id="guideUpload" data-act="guide-upload">Upload a video</button>'
+      : '<button class="btn primary" id="guideNext" data-act="guide-next">Next</button>' + (n === 0 ? '<button class="link-btn" id="guideHave" data-act="guide-upload">I already have videos, take me to Upload</button>' : '')) + '</div></div>';
+  g.hidden = false;
+}
+function closeGuide() { GUIDE.open = false; try { localStorage.setItem('hp.guided', '1'); } catch (e) { /* fine */ } const g = $('#guide'); if (g) g.remove(); }
+/* a short beat made right here, so a first upload is one tap away (and nobody else's sound) */
+async function sampleBeat() {
+  const OAC = window.OfflineAudioContext || window.webkitOfflineAudioContext, sr = 44100, bpm = 140, beats = 16, spb = 60 / bpm, len = Math.ceil(sr * beats * spb);
+  const ctx = new OAC(2, len, sr), out = ctx.destination;
+  const noise = ctx.createBuffer(1, sr, sr), nd = noise.getChannelData(0); for (let i = 0; i < nd.length; i++) nd[i] = Math.random() * 2 - 1;
+  const env = (g, t, a, peak, d) => { g.gain.setValueAtTime(0.0001, t); g.gain.exponentialRampToValueAtTime(peak, t + a); g.gain.exponentialRampToValueAtTime(0.0001, t + d); };
+  const hit = (t, type, f, q, peak, d) => { const s = ctx.createBufferSource(), fl = ctx.createBiquadFilter(), g = ctx.createGain(); s.buffer = noise; fl.type = type; fl.frequency.value = f; if (q) fl.Q.value = q; env(g, t, 0.002, peak, d); s.connect(fl); fl.connect(g); g.connect(out); s.start(t); s.stop(t + d + 0.02); };
+  const bass = [55, 55, 65.41, 49];
+  for (let b = 0; b < beats; b++) {
+    const t = b * spb;
+    const o = ctx.createOscillator(), g = ctx.createGain(); o.frequency.setValueAtTime(150, t); o.frequency.exponentialRampToValueAtTime(42, t + 0.16); env(g, t, 0.004, 0.9, 0.34); o.connect(g); g.connect(out); o.start(t); o.stop(t + 0.36);
+    hit(t + spb / 2, 'highpass', 7000, 0, 0.22, 0.05);
+    if (b % 4 === 1 || b % 4 === 3) hit(t, 'bandpass', 1800, 0.8, 0.45, 0.16);
+    if (b % 2 === 0) { const bo = ctx.createOscillator(), lp = ctx.createBiquadFilter(), bg = ctx.createGain(); bo.type = 'sawtooth'; bo.frequency.value = bass[(b / 2) % 4]; lp.type = 'lowpass'; lp.frequency.value = 420; env(bg, t, 0.02, 0.3, spb * 1.8); bo.connect(lp); lp.connect(bg); bg.connect(out); bo.start(t); bo.stop(t + spb * 2); }
+  }
+  const buf = await ctx.startRendering(), ch = buf.numberOfChannels, n = buf.length, v = new DataView(new ArrayBuffer(44 + n * ch * 2));
+  const w = (o, str) => { for (let i = 0; i < str.length; i++) v.setUint8(o + i, str.charCodeAt(i)); };
+  w(0, 'RIFF'); v.setUint32(4, 36 + n * ch * 2, true); w(8, 'WAVE'); w(12, 'fmt '); v.setUint32(16, 16, true); v.setUint16(20, 1, true); v.setUint16(22, ch, true); v.setUint32(24, sr, true);
+  v.setUint32(28, sr * ch * 2, true); v.setUint16(32, ch * 2, true); v.setUint16(34, 16, true); w(36, 'data'); v.setUint32(40, n * ch * 2, true);
+  const d = []; for (let c = 0; c < ch; c++) d.push(buf.getChannelData(c));
+  let o = 44; for (let i = 0; i < n; i++) for (let c = 0; c < ch; c++) { const x = Math.max(-1, Math.min(1, d[c][i] * 0.8)); v.setInt16(o, x < 0 ? x * 0x8000 : x * 0x7fff, true); o += 2; }
+  return new File([v.buffer], 'Sample beat.wav', { type: 'audio/wav' });
+}
+async function addSample() {
+  try { V14.sample = true; queueFiles([await sampleBeat()]); }
+  catch (e) { V14.sample = false; toast('The sample beat could not be made here. Upload a video instead.'); go('upload'); }
+}
+/* ----- V14: Name it, right after an upload ----- */
+function nameItSheet(id, cut) {
+  const t = track(id); if (!t || sheetOpen() || GUIDE.open) return;
+  const keep = /^Upload \d+$/.test(t.title) ? '' : t.title;
+  sheet('<div class="nameit-head">' + trackCover(t) + '<span class="grow"><span class="nameit-t">Upload added</span><span class="sub nameit-ok">' + IC.tick + fmt(t.dur) + (cut ? ', end clip removed' : '') + '</span></span></div>' +
+    '<form data-form="rename"><label class="nameit-l" for="renameInput">Name it</label><input type="text" id="renameInput" name="tname" maxlength="80" value="' + esc(keep) + '" placeholder="Like Phonk leg day" data-focus autocomplete="off">' +
+    '<p class="sub">Skip and it stays ' + esc(t.title) + '. You can rename it any time.</p>' +
+    '<div class="pair"><button type="button" class="btn" id="nameSkip" data-act="sheet-close">Skip</button><button type="submit" class="btn primary" id="nameSave">Save</button></div></form>', { id, kind: 'nameit' });
+}
+function afterImports(added, newId, cut) {
+  if (V14.sample) { V14.sample = false; if (added === 1 && newId) { go('home'); ACT.play({ id: newId, ctx: 'all' }); } return; }
+  if (added === 1 && newId && S.opt.nameIt && !window.__HP_QUIET) setTimeout(() => nameItSheet(newId, cut), 260);
+}
+/* ----- V14: not losing uploads ----- */
+function trashCloudBytes() {
+  if (!SYNC.st || !S.trash.length) return 0;
+  const ids = new Set(); S.trash.forEach(t => blobRefs('tracks', t, true).forEach(x => ids.add(x)));
+  let b = 0; SYNC.st.up.forEach(x => { if (ids.has(x)) b += store.blobSize(x); }); return b;
+}
+function binFree() { const b = SYNC.on ? trashCloudBytes() : 0; return b ? '<p class="sub" id="binFree">Emptying it frees about ' + fmtBytes(b) + ' of cloud space.</p>' : ''; }
+V14.persisted = null;
+function checkPersist() {
+  try { if (!navigator.storage || !navigator.storage.persisted) return; navigator.storage.persisted().then(v => { const was = V14.persisted; V14.persisted = !!v; if (was !== V14.persisted && S.tab === 'settings') render(); }).catch(() => {}); } catch (e) { /* unknown */ }
+}
+function protectRow() {
+  if (V14.persisted == null) return '';
+  return '<div class="set"><div class="grow"><div class="set-t">' + (V14.persisted ? 'Protected on this device' : 'Not protected yet') + '</div><p class="sub' + (V14.persisted ? ' ok-line' : '') + '" id="protectSub">' +
+    (V14.persisted ? 'This device keeps your library even when space runs low.' : 'When space runs low, this device could clear the library. Back up, or sign in to keep a copy in the cloud.') + '</p></div>' +
+    (V14.persisted ? '' : '<button class="btn sm" id="protectBtn" data-act="persist-ask">Protect</button>') + '</div>';
+}
+const lsNum = k => { try { return +localStorage.getItem(k) || 0; } catch (e) { return 0; } };
+const lsSet = (k, v) => { try { localStorage.setItem(k, String(v)); } catch (e) { /* not kept */ } };
+function markBackup() { lsSet('hp.lastBackup', Date.now()); }
+function backupNudge() {
+  if (SYNC.sess || !store || !store.canWrite || !S.tracks.length) return '';
+  const now = Date.now(), last = lsNum('hp.lastBackup'), since = lsNum('hp.since') || now, base = Math.max(last, since);
+  if (now - base < 30 * 86400000 || now < lsNum('hp.nudgeLater')) return '';
+  const days = Math.floor((now - (last || since)) / 86400000);
+  return '<div class="nudge" id="nudge"><div><div class="nudge-t">Back up your library?</div><p class="sub">' + (last ? 'Your last backup was ' + days + ' days ago.' : 'You have not made a backup yet.') +
+    ' You are not signed in, so this device has the only copy.</p></div><div class="nudge-b"><button class="btn sm primary" id="nudgeGo" data-act="nudge-backup">Back up now</button><button class="btn sm" id="nudgeLater" data-act="nudge-later">Not now</button></div></div>';
+}
+
+/* ----- V14: tester tools: crash reports, an anonymous weekly count, feedback, what's new ----- */
+const VERSION = 'V14';
+const WHATS_NEW = [
+  ['A new look', 'Frosted glass on the controls, EarWorm lime, bigger covers, and a Now playing panel on computers.'],
+  ['Gestures', 'Swipe the mini player to skip, drag the big player down to close it, double-tap its cover to like.'],
+  ['Gym mode', 'Tap the cover in the big player and everything hides except the cover and a thin progress line.'],
+  ['Name it', 'Right after an upload, give it a real name instead of Upload 85.'],
+  ['A safer library', 'See whether this device protects your library, and get a nudge when a backup is due.'],
+  ['EarWorm', 'One word now. Re-add the app to your home screen to get the new name there.']
+];
+const realHost = () => location.protocol === 'https:' && !/^(localhost|127\.|0\.0\.0\.0|\[::1\])/.test(location.hostname);
+const improveOn = () => S.opt.improve !== false && (realHost() || !!window.__HP_REPORT_TEST);
+const devKind = () => (isPC() ? 'computer' : 'phone');
+function deviceId() {
+  let id = '';
+  try { id = localStorage.getItem('hp.device') || ''; if (!id) { id = (window.crypto && crypto.randomUUID ? crypto.randomUUID() : Date.now().toString(36) + Math.random().toString(36).slice(2)).replace(/[^A-Za-z0-9]/g, ''); localStorage.setItem('hp.device', id); } }
+  catch (e) { id = 'nostore' + Math.random().toString(36).slice(2, 12); }
+  return id;
+}
+function isoWeek(d) {
+  const t = new Date(Date.UTC(d.getFullYear(), d.getMonth(), d.getDate())), day = t.getUTCDay() || 7; t.setUTCDate(t.getUTCDate() + 4 - day);
+  const y = t.getUTCFullYear(), w = Math.ceil(((t - Date.UTC(y, 0, 1)) / 86400000 + 1) / 7); return y + '-W' + String(w).padStart(2, '0');
+}
+/* once a week per device: a random device id, the week, the version, phone or computer. Nothing else. */
+async function weeklyPing() {
+  if (!improveOn()) return;
+  const week = isoWeek(new Date()); let last = ''; try { last = localStorage.getItem('hp.pinged') || ''; } catch (e) { /* fine */ }
+  if (last === week) return;
+  try {
+    await sbFetch('/rest/v1/pings', { method: 'POST', json: { device: deviceId(), week, version: VERSION, kind: devKind() }, headers: { Prefer: 'return=minimal,resolution=ignore-duplicates' }, wait: 15000 });
+    try { localStorage.setItem('hp.pinged', week); } catch (e) { /* fine */ }
+  } catch (e) { /* offline or the cloud is asleep: next time */ }
+}
+/* crash reports: errors only, sent straight to Sentry. No names, no emails, nothing uploaded, no screen recording. */
+const SENTRY = { dsn: 'https://cc25cb6e30f18962f6c732604894a377@o4512286113660928.ingest.us.sentry.io/4512286125588480', sent: 0, seen: new Set() };
+const cleanUrl = u => String(u || '').replace(/[?#].*$/, '');
+function stackFrames(stack) {
+  const out = [];
+  String(stack || '').split('\n').slice(0, 40).forEach(line => {
+    const m = /^\s*at (?:(.+?) \()?(.+?):(\d+):(\d+)\)?\s*$/.exec(line) || /^\s*(.*?)@(.+?):(\d+):(\d+)\s*$/.exec(line); if (!m) return;
+    const file = cleanUrl(m[2]);
+    out.push({ function: m[1] || '?', filename: file, lineno: +m[3], colno: +m[4], in_app: file === cleanUrl(location.href) || /index\.html$/.test(file) });
+  });
+  return out.reverse();       // Sentry wants the oldest call first
+}
+function report(e, how) {
+  try {
+    if (!improveOn() || SENTRY.sent >= 10) return;
+    const type = (e && e.name) || 'Error', value = String((e && e.message) || e || 'Unknown error').slice(0, 500), key = type + ':' + value;
+    if (SENTRY.seen.has(key)) return; SENTRY.seen.add(key); SENTRY.sent++;
+    const m = /^https:\/\/([^@]+)@([^/]+)\/(\d+)$/.exec(SENTRY.dsn); if (!m) return;
+    const id = (window.crypto && crypto.randomUUID ? crypto.randomUUID() : (Date.now().toString(16) + Math.random().toString(16).slice(2))).replace(/[^a-f0-9]/gi, '').slice(0, 32).padEnd(32, '0');
+    const standalone = !!(navigator.standalone || (window.matchMedia && window.matchMedia('(display-mode: standalone)').matches));
+    const ev = { event_id: id, timestamp: Date.now() / 1000, platform: 'javascript', level: 'error', release: 'earworm@' + VERSION, environment: realHost() ? 'production' : 'test',
+      tags: { device: devKind(), home_screen_app: String(standalone), where: S.full ? 'big player' : S.tab },
+      exception: { values: [{ type, value, stacktrace: { frames: stackFrames(e && e.stack) }, mechanism: { type: how || 'onerror', handled: false } }] },
+      request: { url: cleanUrl(location.href) }, sdk: { name: 'earworm.reporter', version: '14', settings: { infer_ip: 'never' } } };
+    const body = JSON.stringify({ event_id: id, sent_at: new Date().toISOString(), dsn: SENTRY.dsn }) + '\n' + JSON.stringify({ type: 'event' }) + '\n' + JSON.stringify(ev) + '\n';
+    fetch('https://' + m[2] + '/api/' + m[3] + '/envelope/?sentry_version=7&sentry_key=' + m[1] + '&sentry_client=earworm%2F14', { method: 'POST', body, keepalive: true, headers: { 'Content-Type': 'text/plain;charset=UTF-8' } }).catch(() => {});
+  } catch (x) { /* reporting never breaks the app */ }
+}
+window.addEventListener('error', e => { if (e && e.error) report(e.error, 'onerror'); });
+window.addEventListener('unhandledrejection', e => { const r = e && e.reason; if (r instanceof Error) report(r, 'unhandledrejection'); });
+function aboutBlock() {
+  return '<section class="group about"><div class="card"><div class="set"><div class="grow"><div class="set-t">Help improve EarWorm</div><p class="sub">Sends crash reports and an anonymous weekly count. No names, no emails, nothing you uploaded.</p></div>' +
+    swBtn('improve', 'Help improve EarWorm') + '</div></div><div class="about-b"><button class="btn sm" id="feedbackBtn" data-act="feedback">Send feedback</button><button class="btn sm" id="newsBtn" data-act="whats-new">What\'s new · ' + VERSION + '</button></div>' +
+    '<p class="about-v" id="aboutVersion">EarWorm ' + VERSION + '</p></section>';
+}
+function feedbackSheet() {
+  sheet('<h2>Send feedback</h2><p class="sub">What is broken, what is annoying, what you want next. It goes straight to the developer.</p>' +
+    '<form data-form="feedback" novalidate><textarea id="fbText" name="msg" maxlength="2000" rows="5" placeholder="What is on your mind?" data-focus aria-label="Feedback"></textarea>' +
+    '<input type="email" id="fbEmail" name="email" maxlength="200" placeholder="Email, only if you want a reply" autocomplete="email" aria-label="Email for a reply">' +
+    '<p class="sub auth-msg" id="fbMsg" aria-live="polite"></p><div class="pair"><button type="button" class="btn" data-act="sheet-close">Cancel</button><button type="submit" class="btn primary" id="fbSend">Send</button></div></form>', { kind: 'feedback' });
+}
+async function sendFeedback(f) {
+  const msg = f.elements.msg.value.trim(), email = f.elements.email.value.trim(), say = t => { const m = $('#fbMsg'); if (m) m.textContent = t; }, b = $('#fbSend');
+  if (!msg) return say('Type something first.');
+  if (email && !/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email)) return say('That email does not look right. Leave it empty if you do not want a reply.');
+  if (b) b.disabled = true; say('Sending');
+  try { await sbFetch('/rest/v1/feedback', { method: 'POST', json: { message: msg.slice(0, 2000), email: email || null, version: VERSION, kind: devKind() }, headers: { Prefer: 'return=minimal' }, wait: 20000 }); closeSheet(); toast('Thanks, it is sent.'); }
+  catch (e) { if (b) b.disabled = false; say(e && e.code === 'offline' ? 'Could not send. Check your connection and try again.' : 'Could not send it right now. Try again in a bit.'); }
+}
+function whatsNewSheet() {
+  lsSet('hp.seenVersion', VERSION);
+  sheet('<h2>What\'s new in ' + VERSION + '</h2><ul class="news">' + WHATS_NEW.map(x => '<li><b>' + x[0] + '</b><span>' + x[1] + '</span></li>').join('') + '</ul><button class="btn primary" id="newsOk" data-act="sheet-close">Nice</button>', { kind: 'news' });
+}
+function maybeNews() {
+  if (window.__HP_QUIET || GUIDE.open || !S.ready || sheetOpen() || S.full) return;
+  let seen = ''; try { seen = localStorage.getItem('hp.seenVersion') || ''; } catch (e) { return; }
+  if (seen === VERSION) return;
+  if (!S.tracks.length && !lsNum('hp.since')) { lsSet('hp.seenVersion', VERSION); return; }        // brand new here: the guide does the talking
+  whatsNewSheet();
 }
 
 /* ---------- loudness, for volume leveling ---------- */
@@ -3818,7 +4341,7 @@ async function importOne(job) {
   jobStep(job, 'Saving');
   const asset = await store.putBlob(out.blob);
   let cover = null; if (frame) { try { cover = await store.putBlob(frame, 'image/jpeg'); } catch (e) { cover = null; } }
-  const id = store.id(), title = autoName(job.file.name);
+  const id = store.id(), title = autoName(job.file.name); job.newId = id;
   const doc = { title, asset, dur, bytes: out.blob.size, created: Date.now(), peaks: storedPeaks(fp2, seq) };
   if (cover) doc.cover = cover;
   if (fp) doc.fp = fp;
@@ -3834,11 +4357,11 @@ async function importOne(job) {
 }
 async function runImports() {
   if (importing) return; importing = true; upChanged();
-  let added = 0, trimmedCount = 0, asked = 0; VID.missed = 0; VID.full = false;
+  let added = 0, trimmedCount = 0, asked = 0, lastNew = null; VID.missed = 0; VID.full = false;
   while (importJobs.length) {
     const job = importJobs.shift();
     let r = null;
-    try { r = await importOne(job); if (r === 'ask') asked++; else { added++; if (r === 'trimmed') trimmedCount++; } }
+    try { r = await importOne(job); if (r === 'ask') asked++; else { added++; lastNew = job.newId || null; if (r === 'trimmed') trimmedCount++; } }
     catch (e) { job.error = errText(e); }
     upChanged();
     if (r === 'ask' && S.tab === 'upload') { const el = document.getElementById('imp-' + job.k); if (el) el.scrollIntoView({ block: 'center', behavior: calm ? 'auto' : 'smooth' }); }
@@ -3847,7 +4370,7 @@ async function runImports() {
   refreshUsage();
   const note = trimmedCount ? (trimmedCount === 1 ? ' End clip removed.' : ' End clips removed from ' + trimmedCount + '.') : '';
   const vnote = VID.missed ? ' ' + (VID.missed === 1 ? (added === 1 ? 'Its video' : '1 video') : VID.missed + ' videos') + ' could not be kept' + (VID.full ? ', storage is full.' : '.') : '';
-  if (added) toast((added === 1 ? 'Upload added.' : added + ' uploads added.') + note + vnote);
+  if (added) { toast((added === 1 ? 'Upload added.' : added + ' uploads added.') + note + vnote); afterImports(added, lastNew, trimmedCount > 0); }
   else if (asked && S.tab !== 'upload') toast(asked === 1 ? 'One file looks like an upload you already have. Open Upload to decide.' : asked + ' files look like uploads you already have. Open Upload to decide.');
 }
 function queueFiles(files) {
@@ -4270,10 +4793,10 @@ async function backupLibrary(withVideo) {
     if (DL) await DL.save({ filename: name, data: blob });
     else {
       const file = new File([blob], name, { type: 'application/zip' });
-      if (canShareFile(file)) { BK.file = file; bkSay('Backup ready: ' + what + '. Tap Save backup file.' + left); return; }
+      if (canShareFile(file)) { markBackup(); BK.file = file; bkSay('Backup ready: ' + what + '. Tap Save backup file.' + left); return; }
       downloadBlob(blob, name, 300000);
     }
-    bkSay('Backup saved: ' + what + '.' + left);
+    markBackup(); bkSay('Backup saved: ' + what + '.' + left);
   } catch (e) {
     const c = e && e.code;
     bkSay(c === 'declined' ? 'Backup not saved.' : c === 'rate_limited' ? 'Finish the save that is already open first.' : c === 'too_large' ? 'The library is too big to save as one file here.' + (withVideo ? ' Try Audio only.' : '')
@@ -4440,6 +4963,16 @@ async function joinUploads(ids) {
 
 /* ---------- actions ---------- */
 const ACT = {
+  feedback() { feedbackSheet(); },
+  'whats-new'() { whatsNewSheet(); },
+  'guide-next'() { GUIDE.step = Math.min(G_STEPS.length - 1, GUIDE.step + 1); drawGuide(); },
+  'guide-skip'() { closeGuide(); },
+  'guide-upload'() { closeGuide(); go('upload'); },
+  'guide-sample'() { closeGuide(); addSample(); },
+  'guide-show'() { openGuide(); },
+  'nudge-backup'() { ACT.backup(); },
+  'nudge-later'() { lsSet('hp.nudgeLater', Date.now() + 14 * 86400000); render(); },
+  'persist-ask'() { try { navigator.storage.persist().then(v => { V14.persisted = !!v; render(); if (!v) toast('This device did not agree yet. Adding EarWorm to your home screen helps.'); }).catch(() => {}); } catch (e) { /* no */ } },
   'sel-all'() { if (!S.sel) return; const ids = visibleTracks().map(t => t.id), allOn = ids.length > 0 && ids.every(id => S.sel.has(id)); S.sel = allOn ? new Set() : new Set(ids); render(); },
   'set-find'(d) { S.setQ = ''; S.setSec = d.sec; const qi = document.getElementById('setQ'); if (qi) qi.value = ''; viewKey = ''; render(); window.scrollTo(0, 0); setTimeout(() => flashSetting(d.find || ''), 80); },
   'set-sec'(d) { S.setSec = d.sec; S.setQ = ''; const qi = document.getElementById('setQ'); if (qi) qi.value = ''; render(); if (!isPC()) window.scrollTo(0, 0); },
@@ -4661,7 +5194,7 @@ const FORM = {
     authRun(f, async () => { const j = await signUp(email, pw); if (j && j.access_token) { saveSess(sessFrom(j)); closeSheet(); syncStart(); render(); toast('Account made. Syncing your library.'); } else signInSheet('Check your email and tap the link to confirm your account, then sign in here.'); });
   },
   forgot(f) { const email = f.elements.email.value.trim(); AUTHF.email = email; authRun(f, async () => { await sendReset(email); authSay('If that email has an account, a reset link is on its way. Open it on this device.'); }); },
-  newpw(f) { const pw = f.elements.pw.value, here = !!SYNC.sess && !SYNC.recovery; authRun(f, async () => { await newPassword(pw); closeSheet(); toast(here ? 'Password changed.' : 'Password changed. Sign in with it in the Ear Worm app.'); }); },
+  newpw(f) { const pw = f.elements.pw.value, here = !!SYNC.sess && !SYNC.recovery; authRun(f, async () => { await newPassword(pw); closeSheet(); toast(here ? 'Password changed.' : 'Password changed. Sign in with it in the EarWorm app.'); }); },
   preset(f) {
     const c = sheetCtx || {}, e = f.elements, val = n => (e[n] ? e[n].value : '');
     if (!c.preset && S.presets.length >= 24) { closeSheet(); return toast('That is as many presets as there is room for. Delete one first.'); }
@@ -4670,6 +5203,7 @@ const FORM = {
     closeSheet();
     guard(async () => { await savePresets(c.preset ? S.presets.map(x => (x.id === c.preset ? p : x)) : S.presets.concat(p)); toast(c.preset ? 'Preset saved.' : 'Preset added to Home.'); });
   },
+  feedback(f) { sendFeedback(f); },
   rename(f) { const c = sheetCtx, v = f.elements.tname.value.trim(); closeSheet(); if (c && v) guard(() => store.update('tracks', c.id, { title: v.slice(0, 80) })); },
   playlist(f) {
     const c = sheetCtx || {}, name = (f.elements.pname.value.trim() || 'Playlist ' + (S.playlists.length + 1)).slice(0, 60), color = (f.elements.color && f.elements.color.value) || 'blue';
@@ -4708,6 +5242,8 @@ function onData(d) {
   LIKE_WAIT.forEach((v, id) => { const t = track(id); if (!t || isLiked(t) === !!v) LIKE_WAIT.delete(id); else t.liked = v; });      // a like that is still on its way wins over an older copy
   S.playlists = d.playlists.slice().sort((a, b) => (a.created || 0) - (b.created || 0));
   const first = !S.ready; S.ready = true;
+  checkPersist(); if (S.tracks.length && !lsNum('hp.since')) lsSet('hp.since', Date.now());
+  if (first) setTimeout(() => { maybeNews(); weeklyPing(); }, 1500);
   const sets = d.settings || [], ui = sets.find(x => x.id === 'ui') || null, sig = JSON.stringify(ui && ui.bg || { kind: 'default' });
   if (sig !== S.bgSig) { S.bgSig = sig; S.ui = ui; applyBg(); }
   const saved = sets.find(x => x.id === 'opts');
@@ -4760,7 +5296,7 @@ async function boot() {
 try { const b = JSON.parse(localStorage.getItem('gymtapes.bg') || 'null'); if (b && b.kind !== 'wall') { S.ui = { bg: b }; applyBg(); } } catch (e) { /* default look */ }
 render(); updatePlayer();
 boot();
-window.__gymTapes = { isPC: () => isPC(), MP4, VCUT, VID, SYNC, syncNow: () => syncNow(), prepVideo, videoBlob, S, P, ED, Ending, T, FX, SEC, PRE, UP, ST, VOL, stripAdts, pickEncoder, zipBlob, zipRead, joinKey, addListen: s => addListen(s), saveStats: () => saveStats(true), get audio() { return audio; }, get store() { return store; } };
+window.__gymTapes = { isPC: () => isPC(), VERSION, isoWeek, report, deviceId, cloudText, trashCloudBytes, toggleLike: id => toggleLike(id), MP4, VCUT, VID, SYNC, syncNow: () => syncNow(), prepVideo, videoBlob, S, P, ED, Ending, T, FX, SEC, PRE, UP, ST, VOL, stripAdts, pickEncoder, zipBlob, zipRead, joinKey, addListen: s => addListen(s), saveStats: () => saveStats(true), get audio() { return audio; }, get store() { return store; } };
 })();
 </script>
 

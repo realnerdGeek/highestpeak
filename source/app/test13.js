@@ -26,13 +26,13 @@ const server = http.createServer((req, res) => {
 
   const man = await (await page.request.get(URL0 + 'manifest.webmanifest')).json();
   const icons = await Promise.all(man.icons.map(i => page.request.get(URL0 + i.src).then(r => r.status())));
-  ok('the app manifest is valid, opens full screen, and every icon is there', man.display === 'standalone' && man.start_url === './' && man.name === 'Ear Worm' && icons.every(s => s === 200) && (await page.request.get(URL0 + 'apple-touch-icon.png')).status() === 200, { icons });
+  ok('the app manifest is valid, opens full screen, and every icon is there', man.display === 'standalone' && man.start_url === './' && man.name === 'EarWorm' && icons.every(s => s === 200) && (await page.request.get(URL0 + 'apple-touch-icon.png')).status() === 200, { icons });
 
   await page.goto(URL0); await ready(); await sleep(300);
   let st = await G(() => ({ notice: !document.getElementById('notice').hidden, kind: window.__gymTapes && 'local', standalone: window.HP_STANDALONE === true, title: document.title, manifest: !!document.querySelector('link[rel=manifest]'), touch: !!document.querySelector('link[rel=apple-touch-icon]') }));
-  ok('it opens with the library on the phone and no "not connected" warning', !st.notice && st.standalone && st.title === 'Ear Worm' && st.manifest && st.touch, st);
+  ok('it opens with the library on the phone and no "not connected" warning', !st.notice && st.standalone && st.title === 'EarWorm' && st.manifest && st.touch, st);
   const bar = await G(() => ({ style: document.querySelector('meta[name=apple-mobile-web-app-status-bar-style]').content, light: document.querySelector('meta[name=theme-color][media*=light]').content, dark: document.querySelector('meta[name=theme-color][media*=dark]').content, bg: getComputedStyle(document.documentElement).getPropertyValue('--bg').trim(), navGap: innerHeight - document.querySelector('nav').getBoundingClientRect().bottom }));
-  ok('solid status bar in the page colours (avoids the iOS short-screen bug), tab bar flush with the bottom', bar.style === 'default' && bar.light === bar.bg && bar.dark === '#0A0A0D' && Math.abs(bar.navGap) < 1, bar);
+  ok('solid status bar in the page colours (avoids the iOS short-screen bug), tab bar floating just above the bottom (V14; it was flush)', bar.style === 'default' && bar.light === bar.bg && bar.dark === '#0A0A0D' && bar.navGap >= 8 && bar.navGap <= 24, bar);
   await page.waitForFunction(() => navigator.serviceWorker && navigator.serviceWorker.controller || false, null, { timeout: 10000 }).catch(() => {});
   if (!(await G(() => !!navigator.serviceWorker.controller))) { await page.reload(); await ready(); }
   ok('the offline helper is installed', await G(() => !!navigator.serviceWorker.controller));

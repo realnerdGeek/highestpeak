@@ -1,10 +1,10 @@
-# Builds the home screen version of Ear Worm (formerly HighestPeak) from the same page the Claude version uses.
+# Builds the home screen version of EarWorm (formerly HighestPeak) from the same page the Claude version uses.
 import os, json, time, hashlib
 from PIL import Image
 here = os.path.dirname(os.path.abspath(__file__)); app = os.path.join(os.path.dirname(here), 'app'); out = os.path.join(here, 'site')
 os.makedirs(out, exist_ok=True)
 page = open(os.path.join(app, 'gym-tapes.html'), encoding='utf8').read()
-title = '<title>Ear Worm</title>'
+title = '<title>EarWorm</title>'
 assert page.startswith(title)
 body = page[len(title):]
 build = time.strftime('%Y%m%d%H%M%S') + '-' + hashlib.sha1(page.encode()).hexdigest()[:8]
@@ -14,13 +14,13 @@ head = '''<!doctype html>
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<title>Ear Worm</title>
+<title>EarWorm</title>
 <meta name="description" content="Turn videos into sounds you can loop, shuffle and trim.">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="mobile-web-app-capable" content="yes">
 <!-- keep the status bar solid: on iOS 26 and later a see-through one makes the home screen app a status bar short at the bottom (WebKit bug 301108) -->
 <meta name="apple-mobile-web-app-status-bar-style" content="default">
-<meta name="apple-mobile-web-app-title" content="Ear Worm">
+<meta name="apple-mobile-web-app-title" content="EarWorm">
 <meta name="theme-color" content="#F5F5F7" media="(prefers-color-scheme: light)">
 <meta name="theme-color" content="#0A0A0D" media="(prefers-color-scheme: dark)">
 <meta name="color-scheme" content="light dark">
@@ -39,7 +39,7 @@ if ('serviceWorker' in navigator) addEventListener('load', () => { navigator.ser
 open(os.path.join(out, 'index.html'), 'w', encoding='utf8').write(head + body.lstrip('\n') + '\n</body>\n</html>\n')
 
 manifest = {
-  "name": "Ear Worm", "short_name": "Ear Worm", "description": "Turn videos into sounds you can loop, shuffle and trim.",
+  "name": "EarWorm", "short_name": "EarWorm", "description": "Turn videos into sounds you can loop, shuffle and trim.",
   "id": "./", "start_url": "./", "scope": "./", "display": "standalone", "orientation": "portrait",
   "background_color": "#17121F", "theme_color": "#0A0A0D",
   "icons": [
@@ -56,7 +56,7 @@ manifest = {
 }
 open(os.path.join(out, 'manifest.webmanifest'), 'w', encoding='utf8').write(json.dumps(manifest, indent=2))
 
-# icons: the Ear Worm icon, drawn edge to edge on its dark square; the phone rounds the corners itself
+# icons: the EarWorm icon, drawn edge to edge on its dark square; the phone rounds the corners itself
 src = Image.open(os.path.join(app, 'logo', 'earworm-icon-1024.png')).convert('RGB')
 def square(size): return src.resize((size, size), Image.LANCZOS)
 square(180).save(os.path.join(out, 'apple-touch-icon.png'))
@@ -64,7 +64,7 @@ square(192).save(os.path.join(out, 'icon-192.png'))
 square(512).save(os.path.join(out, 'icon-512.png'))
 square(512).save(os.path.join(out, 'icon-maskable-512.png'))
 
-sw = '''/* Ear Worm offline support. The app itself is kept on the phone, so it opens with no signal.
+sw = '''/* EarWorm offline support. The app itself is kept on the phone, so it opens with no signal.
    The page is checked for a newer version each time it opens with a connection; no more than a few seconds are spent waiting for it. */
 const CACHE = 'highestpeak-BUILD';
 const SHELL = ['./', './index.html', './manifest.webmanifest', './apple-touch-icon.png', './icon-192.png', './icon-512.png', './icon-maskable-512.png'];

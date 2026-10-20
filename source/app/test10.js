@@ -136,12 +136,12 @@ out.close()`);
   ok('a re-zipped, compressed copy restores just the same', L.tracks.length === 3 && L0.tracks.every(o => { const t = L.tracks.find(x => x.id === o.id); return t && sha(blobs.get(t.asset)) === orig.get(o.id); }) && L.playlists.length === 1);
 
   // ---------- wrong files ----------
-  await page.setInputFiles('#backupInput', DIR + '/media/photo.png'); await waitStatus(/not an Ear Worm backup/);
+  await page.setInputFiles('#backupInput', DIR + '/media/photo.png'); await waitStatus(/not an EarWorm backup/);
   const other = path.join(OUT, 'other.zip'); py(`
 import zipfile
 z = zipfile.ZipFile(${JSON.stringify(other)}, 'w'); z.writestr('hello.txt', 'hi'); z.close()`);
   await G(() => { document.getElementById('backupStatus').textContent = ''; });
-  await page.setInputFiles('#backupInput', other); await waitStatus(/not an Ear Worm backup/);
+  await page.setInputFiles('#backupInput', other); await waitStatus(/not an EarWorm backup/);
   ok('a file that is not a backup is refused and nothing changes', (await lib()).tracks.length === 3);
   // ---------- two copies of the same file kept on purpose both survive a backup and restore ----------
   await page.click('#tabUpload'); await page.setInputFiles('#fileInput', DIR + '/media/Leg-day-beeps.mp4'); await page.waitForSelector('.imp.ask'); await page.click('[data-act="imp-force"]');

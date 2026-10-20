@@ -62,13 +62,13 @@ const FAKE = fs.readFileSync(path.join(DIR, 'test6.js'), 'utf8').match(/const FA
   // Home
   await page.click('#tabHome'); await sleep(200);
   let h = await text();
-  ok('Home shows greeting, totals, playlists and newest uploads', /Good (morning|afternoon|evening)|Up late/.test(h) && /3 uploads/.test(h) && /Shuffle everything/.test(h) && /Playlists/.test(h) && /Newest uploads/.test(h) && !/Your rotation/.test(h));
+  ok('Home shows greeting, totals, playlists and newest uploads', /Good (morning|afternoon|evening)|Up late/.test(h) && /3 uploads/.test(h) && /Shuffle everything/.test(h) && /Playlists/.test(h) && /Newest uploads/.test(h) && !(await page.$('#rotGrid')));
   await page.click('#view .list .row:has-text("blue-scene") .row-hit'); await sleep(700);
   await page.click('#view .list .row:has-text("Leg-day-beeps") .row-hit'); await sleep(700);
-  ok('Home does not rearrange itself while it is open', !/Your rotation/.test(await text()));
+  ok('Home does not rearrange itself while it is open', !(await page.$('#rotGrid')));
   await page.click('#tabHome'); await sleep(200);
   h = await text(); const strip = await page.locator('#rotGrid .rot .title').allTextContents(), meta = await page.locator('#rotGrid .rot .meta').allTextContents();
-  ok('after playing, Your rotation shows them, last played first', /Your rotation/.test(h) && strip.join() === 'Leg-day-beeps,blue-scene' && meta[0] === 'Last played', { strip, meta });
+  ok('after playing, Your rotation shows them, last played first (V14: as quick picks with no heading)', !!(await page.$('#rotGrid')) && strip.join() === 'Leg-day-beeps,blue-scene' && meta[0] === 'Last played', { strip, meta });
   ok('Home fits the phone width', await fits());
   await page.screenshot({ path: DIR + '/shots/64-home.png', fullPage: true });
   await page.click('#rotGrid .rot:has-text("blue-scene")'); await sleep(600);

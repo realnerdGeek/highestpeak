@@ -10,15 +10,15 @@ source/
     v6-index-head.txt   page head used for the test copy (app/index.html)
     v8/build.py         applies the patches below, in order, and checks the JavaScript parses
     v8/lib.py           patch helpers (rep asserts the exact match count, cut, before, after)
-    v8/p5_home.py ... p15_v13.py   one patch file per version (p10 = home screen app storage, p11 = V10, p12 = V10.1, p13 = V11, p14 = V12, p15 = V13)
-    test1.js ... test18.js         one test file per version (test16 = V11 sync, test17 = V12, test18 = V13)
-    legacy.js           loaded by tests 1 to 16: shows every Settings section on one page and marks the sync invite as seen
-    mocksb.js           a stand-in for Supabase (accounts, docs table rules, files, usernames, two-step sign-in, delete account)
+    v8/p5_home.py ... p16_v14.py   one patch file per version (p10 = home screen app storage, p11 = V10, p12 = V10.1, p13 = V11, p14 = V12, p15 = V13, p16 = V14)
+    test1.js ... test19.js         one test file per version (test16 = V11 sync, test17 = V12, test18 = V13, test19 = V14)
+    legacy.js           loaded by tests 1 to 16: shows every Settings section on one page, marks the sync invite as seen, and sets __HP_QUIET (no first-open guide, Name it sheet or What's new popping up mid-test)
+    mocksb.js           a stand-in for Supabase (accounts, docs table rules, files, usernames, two-step sign-in, delete account, V14 pings and feedback)
     pw.js               finds Playwright (PW_PATH, the Claude workspace copy, or npm)
     media/              test files that are safe to be public (made with ffmpeg)
     logo/               earworm-icon.svg and earworm-icon-1024.png (the app icons come from this), plus the old HighestPeak logo
   pwa/build_pwa.py      turns app/gym-tapes.html into the home screen site in pwa/site
-  sql/                  the Supabase setup pastes (setup.sql, setup12.sql, fix12.sql) and the local Postgres test files
+  sql/                  the Supabase setup pastes (setup.sql, setup12.sql, fix12.sql, v14.sql) and the local Postgres test files (rls12.sql, rls14.sql)
 ```
 
 ## Build
@@ -26,12 +26,20 @@ source/
 python3 source/app/v8/build.py        # makes app/gym-tapes.html (the page) and app/index.html (test copy)
 python3 source/pwa/build_pwa.py       # makes pwa/site (index.html, sw.js, manifest, icons)
 ```
-Rebuilding from this source gives exactly what's live (checked October 19, 2026, V13).
+Rebuilding from this source gives exactly what's live.
+
+Old builds: `build.py` takes a shorter module list to make an older version. test15 needs the V10 page and test17 the V11 page:
+```
+cd source/app
+python3 v8/build.py p5_home p6_play p7_swipe p8_join p9_ivol p10_local p11_video && cp index.html index-v10.html
+python3 v8/build.py p5_home p6_play p7_swipe p8_join p9_ivol p10_local p11_video p12_movfix p13_sync && cp index.html index-v11.html
+python3 v8/build.py                   # back to the current version
+```
 
 ### Making a new version
-1. Add `app/v8/p16_v14.py` with an `apply(d)` function (copy the style of p15_v13.py), and add `'p16_v14'` to the module list in `build.py`.
+1. Add the next patch file (after p16_v14.py: `app/v8/p17_v15.py`) with an `apply(d)` function, and add it to the module list in `build.py`.
 2. Build, then test (below).
-3. Add `test19.js` for the new version.
+3. Add the next test file (`test20.js`) for the new version.
 4. Deploy (below).
 
 ## Test
@@ -43,6 +51,9 @@ node test18.js          # each test prints PASS/FAIL lines and "N passed, M fail
 ```
 - Run three at a time at most. test9's waveform check can flake under heavy load; it passes on its own.
 - test13 needs `out/four.zip`, which test10 makes. Run test10 first.
+- test1 needs `out/ref.pcm`: `ffmpeg -v error -y -i media/33966784-v29025g50000datbdifog65qur5e1a6g.mp4 -vn -f s16le -ac 2 -ar 44100 out/ref.pcm`
+- test15 and test17 need the old builds (see Build above).
+- test4 needs a `source/chime/` folder (eight more real videos, v1.mp4 to v8.mp4, and the `ending.js` finder) that isn't in this repo or the private zip, so it can't run right now.
 - Chromium in Playwright can't play H.264/AAC, so tests use VP9 and Opus copies where sound has to play.
 
 ### Private test videos (not in this repo)
@@ -53,10 +64,10 @@ Most older tests use copies of real saved videos (other people's TikToks and Mat
 - `app/seed/`: workout-loop.mp4 and its files
 - `app/out/four.zip`
 
-Without the zip, test18 runs fully. With it, all 18 run.
+Without the zip, test18 and test19 run fully. With it, everything but test4 runs.
 
 ### SQL tests
-Run Postgres 16 locally, load `sql/mock.sql` and `sql/mock12b.sql` (a stand-in for Supabase's auth and storage schemas; signed-in users can't read the sign-in factors table, like the real one), then `setup.sql`, `setup12.sql`, `fix12.sql`, then `rls12.sql`. Every check prints `t`, and every ERROR line in the output is an expected refusal.
+Run Postgres 16 locally, load `sql/mock.sql` and `sql/mock12b.sql` (a stand-in for Supabase's auth and storage schemas; signed-in users can't read the sign-in factors table, like the real one), then `setup.sql`, `setup12.sql`, `fix12.sql`, `v14.sql`, then `rls12.sql` and `rls14.sql`. Every check prints `t`, and every ERROR line in the output is an expected refusal.
 
 ## Deploy
 ```

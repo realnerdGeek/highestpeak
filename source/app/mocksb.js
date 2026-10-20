@@ -1,10 +1,12 @@
 // A small stand-in for Supabase, answered inside the test browser: accounts (with email confirmation), the docs table with
 // its per-account rules, and private file folders. Behaves like the real one where the app depends on it.
 // V12: usernames (profiles), two-step sign-in with an authenticator app (TOTP, aal2 rules), listing files, deleting the account.
+// V14: the anonymous weekly count (pings) and feedback: anyone can add a row, nobody can read them back.
 const crypto = require('crypto');
 const KEY = 'sb_publishable_ASIb16kL2C7ldVxfw4-KTA_OC_Dbc77';
 module.exports = function makeMock() {
   const users = new Map(), tokens = new Map(), refresh = new Map(), docs = new Map(), files = new Map(), mail = [], profiles = new Map(), challenges = new Map(), deadSessions = new Set();
+  const pings = [], feedback = [];
   const state = { signupsOff: false, down: false, ttl: 3600, requests: 0, uploads: [], autoProfile: false, log: [] };
   let seq = 0;
   const rid = p => p + crypto.randomBytes(12).toString('hex');
@@ -184,11 +186,26 @@ module.exports = function makeMock() {
       const b = body() || {}; (b.prefixes || []).forEach(n => { if (String(n).split('/')[0] === uid) files.delete(n); });
       return json(route, 200, []);
     }
+    /* ----- V14: pings and feedback, add-only ----- */
+    if (path === '/rest/v1/pings' || path === '/rest/v1/feedback') {
+      if (method !== 'POST') return json(route, 401, { code: '42501', message: 'permission denied for table ' + path.slice(9) });
+      const b = body() || {}, prefer = req.headers()['prefer'] || '';
+      if (path === '/rest/v1/pings') {
+        if (!/^[A-Za-z0-9]{8,64}$/.test(String(b.device || '')) || !/^\d{4}-W\d{2}$/.test(String(b.week || '')) || String(b.version || '').length > 16 || ['phone', 'computer'].indexOf(b.kind) < 0) return json(route, 400, { code: '23514', message: 'new row violates check constraint' });
+        if (pings.some(p => p.device === b.device && p.week === b.week)) return /ignore-duplicates/.test(prefer) ? json(route, 201) : json(route, 409, { code: '23505', message: 'duplicate key value violates unique constraint "pings_pkey"' });
+        pings.push({ device: b.device, week: b.week, version: b.version, kind: b.kind });
+        return json(route, 201);
+      }
+      const msg = String(b.message || ''), email = b.email == null ? null : String(b.email);
+      if (!msg.length || msg.length > 2000 || (email !== null && (email.length > 200 || !/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email)))) return json(route, 400, { code: '23514', message: 'new row violates check constraint' });
+      feedback.push({ message: msg, email, version: b.version || null, kind: b.kind || null });
+      return json(route, 201);
+    }
     return json(route, 404, { message: 'no route ' + method + ' ' + path });
   }
   const normal = s => { const t = Date.parse(s); return isNaN(t) ? s : new Date(t).toISOString().replace('Z', '000+00:00'); };      // timestamps compared as times, like the database does
   return {
-    handle, users, docs, files, mail, state, profiles, totp,
+    handle, users, docs, files, mail, state, profiles, totp, pings, feedback,
     sessionFor(email, aal) { const u = users.get(email); return u ? session(u, aal) : null; },
     code(email) { const u = users.get(email), f = u && (u.factors || []).slice(-1)[0]; return f ? totp(f.secret) : null; },
     confirm(email) { const u = users.get(email); if (u) u.confirmed = true; },

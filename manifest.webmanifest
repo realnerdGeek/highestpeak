@@ -1,6 +1,6 @@
 {
-  "name": "Ear Worm",
-  "short_name": "Ear Worm",
+  "name": "EarWorm",
+  "short_name": "EarWorm",
   "description": "Turn videos into sounds you can loop, shuffle and trim.",
   "id": "./",
   "start_url": "./",
