@@ -52,7 +52,15 @@ manifest = {
     {"name": "Upload", "url": "./?go=upload", "icons": [{"src": "icon-192.png", "sizes": "192x192", "type": "image/png"}]},
     {"name": "Library", "url": "./?go=library", "icons": [{"src": "icon-192.png", "sizes": "192x192", "type": "image/png"}]},
     {"name": "Search", "url": "./?go=search", "icons": [{"src": "icon-192.png", "sizes": "192x192", "type": "image/png"}]}
-  ]
+  ],
+  # V18: the installed computer app shows up under Open with for these files, and an open window takes them
+  "file_handlers": [{"action": "./", "accept": {
+    "video/mp4": [".mp4", ".m4v"], "video/quicktime": [".mov"], "video/webm": [".webm"],
+    "audio/mpeg": [".mp3"], "audio/mp4": [".m4a"], "audio/wav": [".wav"], "audio/aac": [".aac"], "audio/flac": [".flac"], "audio/ogg": [".ogg", ".opus"]}}],
+  "launch_handler": {"client_mode": ["focus-existing", "auto"]},
+  # V18: Android's share sheet lists EarWorm (once installed) for videos and sound; a shared link is caught too
+  "share_target": {"action": "./share-target", "method": "POST", "enctype": "multipart/form-data",
+    "params": {"title": "title", "text": "text", "url": "url", "files": [{"name": "media", "accept": ["video/*", "audio/*", ".mp4", ".mov", ".m4a", ".mp3", ".wav"]}]}}
 }
 open(os.path.join(out, 'manifest.webmanifest'), 'w', encoding='utf8').write(json.dumps(manifest, indent=2))
 
@@ -74,8 +82,22 @@ const fresh = req => new Promise((resolve, reject) => {
   const timer = setTimeout(() => reject(new Error('slow')), 3500);
   fetch(req, { cache: 'no-store' }).then(res => { clearTimeout(timer); if (res && res.ok) { const copy = res.clone(); caches.open(CACHE).then(c => c.put('./index.html', copy)); resolve(res); } else reject(new Error('bad')); }, err => { clearTimeout(timer); reject(err); });
 });
+/* Android share sheet (V18): what was shared is kept for the app in its own cache, then the app opens with ?share=1 */
+const SHARE = 'earworm-share';
+async function shared(req) {
+  const scope = self.registration.scope;
+  try {
+    const fd = await req.formData(), files = fd.getAll('media').filter(f => f && typeof f !== 'string' && f.size > 0);     // an empty file field comes through as a nameless empty file
+    await caches.delete(SHARE); const c = await caches.open(SHARE);
+    for (let i = 0; i < files.length; i++) await c.put(new URL('share/' + i, scope).href, new Response(files[i], { headers: { 'content-type': files[i].type || 'application/octet-stream', 'x-name': encodeURIComponent(files[i].name || 'Shared video') } }));
+    await c.put(new URL('share/meta', scope).href, new Response(JSON.stringify({ n: files.length, title: String(fd.get('title') || ''), text: String(fd.get('text') || ''), url: String(fd.get('url') || ''), at: Date.now() }), { headers: { 'content-type': 'application/json' } }));
+  } catch (err) { /* nothing readable came through: the app just opens */ }
+  return Response.redirect(new URL('./?share=1', scope).href, 303);
+}
 self.addEventListener('fetch', e => {
-  const r = e.request; if (r.method !== 'GET') return;
+  const r = e.request;
+  if (r.method === 'POST' && new URL(r.url).pathname.endsWith('/share-target')) { e.respondWith(shared(r)); return; }
+  if (r.method !== 'GET') return;
   const u = new URL(r.url); if (u.origin !== self.location.origin) return;
   if (r.mode === 'navigate') { e.respondWith(fresh(r).catch(() => caches.match('./index.html').then(m => m || caches.match('./')))); return; }
   e.respondWith(caches.match(r, { ignoreSearch: true }).then(m => m || fetch(r)));
