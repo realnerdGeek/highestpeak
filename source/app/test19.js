@@ -1,6 +1,7 @@
 // Test 19 (V14): the redesign (glass tab bar and mini player, quick picks and big covers, the bar shrinking while
 // scrolling, swipes, gym mode, double-tap to like, drag down to close, the Glass effects switch, the computer's
-// Now playing panel and full-screen player, thin scrollbars, the Settings search highlight fix).
+// Now playing panel and full-screen player, thin scrollbars, the Settings search highlight fix), the EarWorm name, the
+// first-open guide and sample beat, Name it, whether the library is protected, the backup nudge, cloud space in Recently deleted.
 const { chromium } = require('./pw.js');
 const http = require('http'), fs = require('fs'), path = require('path');
 const makeMock = require('./mocksb.js');
@@ -15,7 +16,7 @@ const LIME = 'rgb(200, 241, 53)';
 async function device(browser, name, o) {
   o = o || {};
   const ctx = await browser.newContext(Object.assign({ colorScheme: 'dark' }, o.pc ? { viewport: { width: 1440, height: 900 } } : { viewport: { width: 390, height: 844 }, deviceScaleFactor: 2, hasTouch: true }));
-  await ctx.addInitScript(() => { window.HP_STANDALONE = true; try { localStorage.setItem('hp.syncAsked', '1'); } catch (e) { /* blank page */ } });
+  await ctx.addInitScript(q => { window.HP_STANDALONE = true; if (q) window.__HP_QUIET = true; try { localStorage.setItem('hp.syncAsked', '1'); } catch (e) { /* blank page */ } }, o.quiet !== false);
   await ctx.route(SB, route => mock.handle(route));
   const page = await ctx.newPage();
   page.on('pageerror', e => allErrors.push(name + ' pageerror: ' + e.message));
@@ -160,6 +161,79 @@ async function device(browser, name, o) {
   await C.page.fill('#setQ', ''); await sleep(300);
   const cur2 = await C.G(() => Array.from(document.querySelectorAll('.set-side button[aria-current="true"]')).map(b => b.textContent.trim()));
   ok('clearing the search highlights the open section again', cur2.length === 1 && cur2[0] === 'Sound', cur2);
+
+
+  /* ===== V14 chunk B: the name, the first-open guide, Name it, not losing uploads ===== */
+  const brand = await P.G(() => ({ title: document.title, h1: document.querySelector('h1').textContent.trim(), side: document.querySelector('.nav-logo .brand-t').textContent }));
+  ok('the name is EarWorm, one word, in the title, the header and the sidebar', brand.title === 'EarWorm' && brand.h1 === 'EarWorm' && brand.side === 'EarWorm', brand);
+  const site = fs.readFileSync(path.join(DIR, '..', 'pwa', 'site', 'index.html'), 'utf8'), man = JSON.parse(fs.readFileSync(path.join(DIR, '..', 'pwa', 'site', 'manifest.webmanifest'), 'utf8'));
+  ok('the home screen and computer app are named EarWorm', /<title>EarWorm<\/title>/.test(site) && /apple-mobile-web-app-title" content="EarWorm"/.test(site) && man.name === 'EarWorm' && man.short_name === 'EarWorm');
+  ok('new authenticator setups say EarWorm', /issuer: 'EarWorm', friendly_name: 'EarWorm '/.test(site) && !/Ear Worm'/.test(site));
+
+  const F = await device(browser, 'fresh', { quiet: false });
+  await F.page.waitForSelector('#guide', { timeout: 5000 }).catch(() => {});
+  let g = await F.G(() => ({ on: !!document.getElementById('guide'), t: (document.getElementById('guideTitle') || {}).textContent, dots: document.querySelectorAll('.g-dots i').length, skip: !!document.getElementById('guideSkip'), works: (document.querySelector('.g-works') || {}).textContent || '' }));
+  ok('a first open with nothing uploaded shows the guide: step 1 of 3, with Skip', g.on && g.t === 'Save the video to your phone' && g.dots === 3 && g.skip, g);
+  ok('the guide is for any video, not one app', /Screen recordings/.test(g.works) && /Voice memos/.test(g.works) && !/TikTok/i.test(await F.G(() => document.getElementById('guide').textContent)), g.works);
+  await sleep(500); ok('the guide covers the screen (not see-through once it is in)', (await F.G(() => getComputedStyle(document.getElementById('guide')).opacity)) === '1');
+  await F.shot('v14-guide-1');
+  await F.page.click('#guideNext'); await sleep(200);
+  ok('Next: step 2, uploading', (await F.G(() => document.getElementById('guideTitle').textContent)) === 'Upload it to EarWorm');
+  await F.page.click('#guideNext'); await sleep(200);
+  ok('Next: step 3, with Try the sample beat', (await F.G(() => document.getElementById('guideTitle').textContent)) === 'Loop it your way' && await F.page.isVisible('#guideSample'));
+  await F.page.click('#guideSample');
+  await F.page.waitForFunction(() => window.__gymTapes.S.tracks.length === 1 && !window.__gymTapes.audio.paused, null, { timeout: 60000 }).catch(() => {});
+  await sleep(500);
+  const smp = await F.G(() => { const g2 = window.__gymTapes, t = g2.S.tracks[0]; return { guide: !!document.getElementById('guide'), done: localStorage.getItem('hp.guided'), title: t && t.title, dur: t && t.dur, playing: !!t && g2.P.cur === t.id && !g2.audio.paused, tab: g2.S.tab, sheet: !document.getElementById('sheet').hidden }; });
+  ok('Try the sample beat: the guide closes for good, a Sample beat upload is made and starts playing on Home', !smp.guide && smp.done === '1' && smp.title === 'Sample beat' && smp.dur > 5 && smp.playing && smp.tab === 'home' && !smp.sheet, smp);
+  await F.page.reload(); await F.ready(); await sleep(700);
+  ok('after that, the guide does not come back on its own', !(await F.G(() => !!document.getElementById('guide'))));
+  await F.page.click('#tabSettings'); await sleep(200); await F.page.click('#set-uploads'); await sleep(200);
+  await F.page.click('#guideShow'); await sleep(200);
+  ok('Settings, Uploads and videos: Show brings the guide back', await F.G(() => !!document.getElementById('guide')));
+  await F.page.click('#guideSkip'); await sleep(200);
+  ok('Skip closes it', !(await F.G(() => !!document.getElementById('guide'))));
+
+  /* Name it */
+  await F.page.setInputFiles('#fileInput', [DIR + '/media/two-tones.mp3']);
+  await F.page.waitForSelector('#nameSave', { timeout: 60000 }).catch(() => {});
+  const ni = await F.G(() => ({ open: !document.getElementById('sheet').hidden, head: (document.querySelector('.nameit-t') || {}).textContent, val: (document.getElementById('renameInput') || {}).value, focus: document.activeElement && document.activeElement.id }));
+  ok('one upload: the Name it box pops up, ready to type', ni.open && ni.head === 'Upload added' && ni.focus === 'renameInput', ni);
+  await F.shot('v14-name-it');
+  await F.page.fill('#renameInput', 'Phonk leg day'); await F.page.click('#nameSave'); await sleep(400);
+  ok('Save names it', await F.G(() => window.__gymTapes.S.tracks.some(t => t.title === 'Phonk leg day')));
+  await F.page.setInputFiles('#fileInput', [DIR + '/media/mono-low.wav']);
+  await F.page.waitForSelector('#nameSkip', { timeout: 60000 }).catch(() => {}); await F.page.click('#nameSkip'); await sleep(400);
+  ok('Skip keeps the name it came with', await F.G(() => window.__gymTapes.S.tracks.length === 3 && window.__gymTapes.S.tracks.some(t => t.title === 'mono-low')));
+  await F.page.click('#tabSettings'); await sleep(200); await F.page.click('#set-uploads'); await sleep(200); await F.page.click('#sw-nameIt'); await sleep(200);
+  await F.page.setInputFiles('#fileInput', [DIR + '/media/Leg-day-beeps.mp4']);
+  await F.page.waitForFunction(() => window.__gymTapes.S.tracks.length === 4 && document.getElementById('upDot').hidden, null, { timeout: 90000 }); await sleep(700);
+  ok('with Name new uploads off, no box', await F.G(() => document.getElementById('sheet').hidden));
+
+  /* is the library protected on this device, and the backup nudge */
+  await F.G(() => { localStorage.setItem('hp.since', String(Date.now() - 40 * 86400000)); localStorage.removeItem('hp.lastBackup'); localStorage.removeItem('hp.nudgeLater'); });
+  await F.page.reload(); await F.ready(); await sleep(500);
+  await F.page.click('#tabSettings'); await sleep(300);
+  const nd = await F.G(() => ({ on: !!document.getElementById('nudge'), text: (document.getElementById('nudge') || {}).textContent || '', lib: (document.querySelector('#set-library .sub') || {}).textContent || '' }));
+  ok('not signed in, no backup in over a month: Settings asks to back up', nd.on && /not made a backup yet/.test(nd.text) && /only copy/.test(nd.text), nd);
+  ok('the Library and storage row says whether this device protects the library', /Protected on this device|Not protected yet/.test(nd.lib), nd.lib);
+  await F.shot('v14-settings-nudge');
+  await F.page.click('#nudgeLater'); await sleep(300);
+  ok('Not now hides it for two weeks', !(await F.G(() => !!document.getElementById('nudge'))) && (await F.G(() => +localStorage.getItem('hp.nudgeLater'))) > Date.now() + 13 * 86400000);
+  await F.G(() => { localStorage.removeItem('hp.nudgeLater'); localStorage.setItem('hp.lastBackup', String(Date.now() - 3 * 86400000)); }); await F.page.click('#tabHome'); await sleep(200); await F.page.click('#tabSettings'); await sleep(300);
+  ok('a recent backup: no nudge', !(await F.G(() => !!document.getElementById('nudge'))));
+  await F.page.click('#set-library'); await sleep(300);
+  const pr = await F.G(() => ({ t: (document.querySelector('#protectSub') || {}).textContent || '', btn: !!document.getElementById('protectBtn') }));
+  ok('Library and storage explains it (and offers Protect when it is not)', /keeps your library|could clear the library/.test(pr.t) && (pr.btn === /could clear/.test(pr.t)), pr);
+
+  /* cloud space sitting in Recently deleted */
+  const cl = await F.G(() => {
+    const g2 = window.__gymTapes, t = g2.S.tracks[0], old = { st: g2.SYNC.st, trash: g2.S.trash };
+    g2.SYNC.st = Object.assign({}, old.st || {}, { up: new Set(g2.S.tracks.map(x => x.asset)) }); g2.S.trash = [t];
+    const r = { text: g2.cloudText(), tb: g2.trashCloudBytes() };
+    g2.SYNC.st = old.st; g2.S.trash = old.trash; return r;
+  });
+  ok('the cloud space line says how much of it is sitting in Recently deleted', /of 1 GB cloud space used, .+ of it in Recently deleted/.test(cl.text) && cl.tb > 0, cl);
 
   ok('no page errors', allErrors.length === 0, allErrors);
   console.log(`\n${pass} passed, ${fail} failed`);

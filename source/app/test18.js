@@ -1,4 +1,4 @@
-// Test 18 (V13): the Ear Worm name and logo, the username in the greeting, selecting several uploads (Home, Library,
+// Test 18 (V13): the Ear Worm name and logo (EarWorm, one word, since V14), the username in the greeting, selecting several uploads (Home, Library,
 // long-press, Select all), quick settings, the settings search, and the computer app's icon shortcuts.
 const { chromium } = require('./pw.js');
 const http = require('http'), fs = require('fs'), path = require('path');
@@ -14,7 +14,7 @@ const allErrors = [];
 async function device(browser, name, o) {
   o = o || {};
   const ctx = await browser.newContext(o.pc ? { viewport: { width: 1440, height: 900 } } : { viewport: { width: 390, height: 844 }, deviceScaleFactor: 2 });
-  await ctx.addInitScript(a => { window.HP_STANDALONE = true; try { if (a) localStorage.setItem('hp.syncAsked', '1'); } catch (e) { /* blank page */ } }, !!o.asked);
+  await ctx.addInitScript(a => { window.HP_STANDALONE = true; window.__HP_QUIET = true; try { if (a) localStorage.setItem('hp.syncAsked', '1'); } catch (e) { /* blank page */ } }, !!o.asked);
   await ctx.route(SB, route => mock.handle(route));
   const page = await ctx.newPage();
   page.on('pageerror', e => allErrors.push(name + ' pageerror: ' + e.message));
@@ -42,12 +42,12 @@ async function device(browser, name, o) {
   const P = await device(browser, 'phone');
   await P.page.waitForSelector('#askNew', { timeout: 6000 }).catch(() => {});
   const inv = await P.G(() => ({ logo: !!document.querySelector('.ask-head .brand-ic svg'), text: document.getElementById('sheetPanel').textContent }));
-  ok('the sync invite has the Ear Worm icon and name', inv.logo && /Or keep using Ear Worm/.test(inv.text), inv);
+  ok('the sync invite has the Ear Worm icon and name', inv.logo && /Or keep using EarWorm/.test(inv.text), inv);
   await P.page.click('#askLater'); await sleep(300);
   await P.add([DIR + '/media/two-tones.mp3', DIR + '/media/mono-low.wav', DIR + '/media/Leg-day-beeps.mp4'], 3);
   await P.page.click('#tabHome'); await sleep(300);
   const brand = await P.G(() => ({ title: document.title, h1: document.querySelector('h1').textContent.trim(), icon: !!document.querySelector('h1 .brand-ic svg'), worm: getComputedStyle(document.querySelector('h1 .brand-t b')).color, ear: getComputedStyle(document.querySelector('h1 .brand-t')).color, old: /HighestPeak/.test(document.body.innerText) }));
-  ok('the page title and header say Ear Worm, with the sound wave icon, and HighestPeak is gone from the screen', brand.title === 'Ear Worm' && brand.h1 === 'Ear Worm' && brand.icon && !brand.old, brand);
+  ok('the page title and header say Ear Worm, with the sound wave icon, and HighestPeak is gone from the screen', brand.title === 'EarWorm' && brand.h1 === 'EarWorm' && brand.icon && !brand.old, brand);
   ok('in light mode "Worm" is the same dark ink as "Ear"', brand.worm === brand.ear, brand);
   await P.shot('v13-home-light');
   await P.page.emulateMedia({ colorScheme: 'dark' }); await sleep(200);
@@ -130,7 +130,7 @@ async function device(browser, name, o) {
   /* ===== the computer ===== */
   const C = await device(browser, 'pc', { pc: true, asked: true });
   await C.add([DIR + '/media/two-tones.mp3', DIR + '/media/mono-low.wav'], 2);
-  ok('the computer sidebar shows the Ear Worm logo', (await C.text('.nav-logo .brand-t')) === 'Ear Worm' && await C.vis('.nav-logo .brand-ic svg'));
+  ok('the computer sidebar shows the Ear Worm logo', (await C.text('.nav-logo .brand-t')) === 'EarWorm' && await C.vis('.nav-logo .brand-ic svg'));
   await C.page.click('#tabSettings'); await sleep(250);
   const side = await C.G(() => ({ first: document.querySelector('.set-side button').textContent, cur: document.querySelector('.set-side [aria-current="true"]').textContent, h: document.querySelector('#setMain .sec-t').textContent, speed: !!document.querySelector('#setMain [data-k="speed"]') }));
   ok('Settings on a computer opens on Quick settings, first in the side list', side.first === 'Quick settings' && side.cur === 'Quick settings' && side.h === 'Quick settings' && side.speed, side);
@@ -150,10 +150,10 @@ async function device(browser, name, o) {
 
   /* ===== the home screen app files ===== */
   const man = JSON.parse(fs.readFileSync(path.join(SITE, 'manifest.webmanifest'), 'utf8'));
-  ok('the app manifest is named Ear Worm and has the four icon shortcuts', man.name === 'Ear Worm' && man.short_name === 'Ear Worm' && man.shortcuts.map(s => s.url).join() === './?go=shuffle,./?go=upload,./?go=library,./?go=search', man.shortcuts);
+  ok('the app manifest is named Ear Worm and has the four icon shortcuts', man.name === 'EarWorm' && man.short_name === 'EarWorm' && man.shortcuts.map(s => s.url).join() === './?go=shuffle,./?go=upload,./?go=library,./?go=search', man.shortcuts);
   const site = fs.readFileSync(path.join(SITE, 'index.html'), 'utf8');
-  ok('the home screen title is Ear Worm', /<title>Ear Worm<\/title>/.test(site) && /apple-mobile-web-app-title" content="Ear Worm"/.test(site));
-  ok('the code sheet tells people an older authenticator entry may still say HighestPeak', /If you set it up before the name changed, it is listed as HighestPeak/.test(site));
+  ok('the home screen title is Ear Worm', /<title>EarWorm<\/title>/.test(site) && /apple-mobile-web-app-title" content="EarWorm"/.test(site));
+  ok('the code sheet tells people an older authenticator entry may still say HighestPeak', /If you set it up before the name changed, it may be listed as HighestPeak/.test(site));
   if (PNG) {
     const png = PNG.sync.read(fs.readFileSync(path.join(SITE, 'apple-touch-icon.png'))), px = (x, y) => { const i = (png.width * y + x) << 2; return [png.data[i], png.data[i + 1], png.data[i + 2]]; };
     const corner = px(1, 1), mid = px(Math.round(png.width * 0.75), Math.round(png.height * 0.44));

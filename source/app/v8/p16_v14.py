@@ -310,3 +310,220 @@ def apply(d):
     # Settings search on a computer: no section stays highlighted
     d.rep("if (out) paint(out, setFindBody());", "if (out) paint(out, setFindBody()); sideCur();")
     d.before('/* ---------- loudness, for volume leveling ---------- */', EXTRA)
+    apply_b(d)
+
+
+# ---------------------------------------------------------------------------------------------------------------------
+# V14 chunk B: the EarWorm name, the first-open guide with a sample beat, the Name it box after an upload, and not losing
+# uploads (cloud space sitting in Recently deleted, whether this device protects the library, a monthly backup nudge).
+
+CSS_B = r"""
+/* the first-open guide */
+.guide{position:fixed;inset:0;z-index:45;background:var(--bg);color:var(--ink);overflow:auto;display:flex;justify-content:center;padding:calc(18px + env(safe-area-inset-top,0px)) 20px calc(26px + env(safe-area-inset-bottom,0px));animation:viewIn .25s ease-out}
+.guide::before{content:"";position:fixed;left:0;right:0;top:0;height:60vh;background:radial-gradient(90% 70% at 50% 35%,color-mix(in srgb,var(--accent) 16%,transparent),transparent 70%);pointer-events:none}
+.g-in{position:relative;width:100%;max-width:440px;display:flex;flex-direction:column;gap:14px;min-height:100%}
+.g-top{display:flex;align-items:center;justify-content:space-between}
+.g-dots{display:flex;gap:6px}.g-dots i{width:6px;height:6px;border-radius:3px;background:color-mix(in srgb,var(--ink) 25%,transparent)}.g-dots i.on{width:26px;background:var(--accent)}
+.g-phone{position:relative;align-self:center;width:220px;height:322px;border-radius:34px;border:2px solid color-mix(in srgb,var(--ink) 22%,transparent);background:var(--surface);overflow:hidden;box-shadow:0 30px 60px var(--shadow);margin-top:6px;flex:none}
+.g-vid{position:absolute;left:10px;right:10px;top:10px;height:196px;border-radius:24px;background:radial-gradient(circle at 65% 30%,#F0446A 0,transparent 55%),linear-gradient(160deg,#2B1055,#120A22)}
+.g-share{position:absolute;right:18px;top:116px;width:34px;height:34px;border-radius:17px;background:rgba(255,255,255,.2);display:grid;place-items:center;color:#fff}
+.g-sheet{position:absolute;left:0;right:0;bottom:0;height:168px;border-radius:22px 22px 0 0;background:var(--raise);padding:10px 12px;box-sizing:border-box;display:flex;flex-direction:column;gap:6px;animation:gSheet 4s ease-in-out infinite}
+.g-sheet .gh{align-self:center;width:30px;height:4px;border-radius:2px;background:color-mix(in srgb,var(--ink) 30%,transparent)}
+.g-row{position:relative;height:38px;border-radius:10px;background:color-mix(in srgb,var(--ink) 6%,transparent);display:flex;align-items:center;gap:9px;padding:0 10px;font-size:13px;font-weight:600}
+.g-row.hit{font-weight:700;animation:gRow 4s ease-in-out infinite}
+.g-tap{position:absolute;width:30px;height:30px;border-radius:15px;border:3px solid var(--accent);animation:gTap 4s ease-out infinite}
+.g-up{position:absolute;left:14px;right:14px;top:56px;height:150px;border-radius:20px;border:2px dashed color-mix(in srgb,var(--ink) 25%,transparent);display:grid;place-items:center}
+.g-plus{width:58px;height:42px;border-radius:21px;background:var(--accent);color:var(--on-accent);display:grid;place-items:center}
+.g-h{position:absolute;left:16px;top:18px;font:800 20px/1 var(--round)}
+.g-thumbs{position:absolute;left:14px;right:14px;bottom:18px;display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:6px;animation:gThumbs 4s ease-in-out infinite}
+.g-thumbs i{height:62px;border-radius:10px;background:linear-gradient(160deg,#2B1055,#F0446A)}.g-thumbs i:nth-child(2){background:linear-gradient(160deg,#0F3B2E,#C8F135)}.g-thumbs i:nth-child(3){background:linear-gradient(160deg,#0B1A3A,#4AA8FF)}
+.g-mini{position:absolute;left:10px;right:10px;bottom:16px;height:56px;border-radius:18px;background:var(--raise);display:flex;align-items:center;gap:9px;padding:0 10px}
+.g-mini b{width:38px;height:38px;border-radius:10px;background:radial-gradient(circle at 65% 30%,#F0446A 0,transparent 55%),linear-gradient(160deg,#2B1055,#120A22);flex:none}
+.g-mini span{flex:1;font-size:13px;font-weight:700}
+.g-loop{color:var(--accent-ink);animation:gSpin 2.4s linear infinite}
+.g-wave{position:absolute;left:18px;right:18px;top:70px;height:120px;display:flex;align-items:center;gap:4px}
+.g-wave i{flex:1;border-radius:3px;background:var(--accent);animation:eq .9s ease-in-out infinite alternate}
+.g-wave i:nth-child(2n){animation-delay:.2s}.g-wave i:nth-child(3n){animation-delay:.45s}.g-wave i:nth-child(5n){animation-delay:.1s}
+.g-t{margin:8px 0 0;font:800 28px/1.15 var(--round);letter-spacing:-.02em}
+.g-p{margin:0;font-size:15px;line-height:1.45;color:var(--muted)}.g-p b{color:var(--ink)}
+.g-works{display:flex;flex-wrap:wrap;gap:8px}.g-works span{display:inline-flex;align-items:center;gap:6px;height:30px;padding:0 11px;border-radius:15px;background:color-mix(in srgb,var(--ink) 7%,transparent);font-size:12px;font-weight:600}
+.g-acts{margin-top:auto;display:flex;flex-direction:column;gap:10px;padding-top:12px}
+.g-acts .btn{width:100%;min-height:54px;font-size:17px}
+.g-acts .link-btn{align-self:center;padding:8px;font-size:14px;font-weight:600;color:var(--muted)}
+@keyframes gSheet{0%,12%{transform:translateY(105%)}30%,82%{transform:translateY(0)}100%{transform:translateY(105%)}}
+@keyframes gTap{0%,44%{transform:scale(.4);opacity:0}52%{opacity:.95}72%{transform:scale(1.5);opacity:0}100%{opacity:0}}
+@keyframes gRow{0%,48%{background:color-mix(in srgb,var(--ink) 6%,transparent)}56%,78%{background:color-mix(in srgb,var(--accent) 24%,transparent)}100%{background:color-mix(in srgb,var(--ink) 6%,transparent)}}
+@keyframes gThumbs{0%,15%{transform:translateY(130%)}35%,85%{transform:translateY(0)}100%{transform:translateY(130%)}}
+@keyframes gSpin{to{transform:rotate(360deg)}}
+@media (prefers-reduced-motion: reduce){.g-sheet,.g-tap,.g-row.hit,.g-thumbs,.g-loop,.g-wave i{animation:none}}
+/* Name it, after an upload */
+.nameit-head{display:flex;align-items:center;gap:14px}
+.nameit-head .cover{width:64px;height:64px;border-radius:14px;flex:none}
+.nameit-t{display:block;font:800 21px/1.2 var(--round)}
+.nameit-ok{display:inline-flex;align-items:center;gap:5px;color:var(--accent-ink);font-weight:600}
+.nameit-ok svg{width:14px;height:14px}
+.nameit-l{display:block;margin:4px 0 6px;font-size:13px;font-weight:700;color:var(--muted)}
+/* the backup nudge */
+.nudge{margin-top:14px;border-radius:18px;padding:14px;background:color-mix(in srgb,var(--accent) 9%,transparent);border:1px solid color-mix(in srgb,var(--accent) 34%,transparent);display:flex;flex-direction:column;gap:10px}
+.nudge-t{font-weight:700;font-size:15px}
+.nudge .sub{margin:3px 0 0}
+.nudge-b{display:flex;gap:8px}
+.ok-line{color:var(--accent-ink)}
+"""
+
+GUIDE_JS = r"""/* ----- V14: the first-open guide, with a sample beat to play with ----- */
+const GUIDE = { open: false, step: 0 };
+const gIc = (d, fill) => '<svg width="16" height="16" viewBox="0 0 24 24" fill="' + (fill ? 'currentColor' : 'none') + '" stroke="' + (fill ? 'none' : 'currentColor') + '" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">' + d + '</svg>';
+const G_STEPS = [
+  { t: 'Save the video to your phone', p: 'In the app you are watching, tap <b>Share</b>, then <b>Save video</b> or <b>Download</b>. Screen recordings and clips already in your camera roll work too.',
+    art: '<div class="g-phone" aria-hidden="true"><div class="g-vid"></div><span class="g-share">' + gIc('<path d="M12 3v12M7 8l5-5 5 5M5 14v5a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2v-5"/>') + '</span><div class="g-sheet"><span class="gh"></span>' +
+      '<div class="g-row hit">' + gIc('<path d="M12 4v11M7 10l5 5 5-5M5 20h14"/>') + 'Save video<span class="g-tap" style="right:18px;top:4px"></span></div><div class="g-row">' + gIc('<rect x="8" y="8" width="12" height="12" rx="2"/><path d="M4 16V6a2 2 0 0 1 2-2h10"/>') + 'Copy link</div><div class="g-row">More</div></div></div>' },
+  { t: 'Upload it to EarWorm', p: 'Tap <b>Upload</b> and pick the video from Photos or Files. EarWorm keeps the sound and cuts off the app logo and chime at the end.',
+    art: '<div class="g-phone" aria-hidden="true"><span class="g-h">Upload</span><div class="g-up"><span class="g-plus">' + gIc('<path d="M12 5v14M5 12h14"/>') + '</span><span class="g-tap" style="left:calc(50% - 15px);top:calc(50% - 15px)"></span></div><div class="g-thumbs"><i></i><i></i><i></i></div></div>' },
+  { t: 'Loop it your way', p: 'Play it on repeat, keep just the part you want, and make a playlist for each workout. Try it with a beat made for you.',
+    art: '<div class="g-phone" aria-hidden="true"><span class="g-h">Now playing</span><div class="g-wave">' + '<i style="height:40%"></i><i style="height:70%"></i><i style="height:55%"></i><i style="height:90%"></i><i style="height:60%"></i><i style="height:80%"></i><i style="height:45%"></i><i style="height:75%"></i><i style="height:50%"></i><i style="height:85%"></i>' + '</div>' +
+      '<div class="g-mini"><b></b><span>Sample beat</span><span class="g-loop">' + gIc('<path d="M17 2l3 3-3 3M4 11V9a4 4 0 0 1 4-4h12M7 22l-3-3 3-3M20 13v2a4 4 0 0 1-4 4H4"/>') + '</span></div></div>' }
+];
+const G_WORKS = '<div class="g-works"><span>' + gIc('<rect x="3" y="6" width="13" height="12" rx="2"/><path d="m16 10 5-3v10l-5-3z"/>') + 'Saved videos</span><span>' + gIc('<circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="4"/>') + 'Screen recordings</span>' +
+  '<span>' + gIc('<rect x="9" y="3" width="6" height="11" rx="3"/><path d="M5 11a7 7 0 0 0 14 0M12 18v3"/>') + 'Voice memos</span><span>' + gIc('<path d="M9 18V5l11-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="17" cy="16" r="3"/>') + 'MP3, WAV, M4A</span></div>';
+const guided = () => { try { return localStorage.getItem('hp.guided') === '1'; } catch (e) { return true; } };
+function maybeGuide() {
+  if (GUIDE.open || window.__HP_QUIET || !S.ready || S.tracks.length || guided() || !store || !store.canWrite || SYNC.sess || sheetOpen() || S.full || VID.open) return;
+  let asked = true; try { asked = localStorage.getItem('hp.syncAsked') === '1'; } catch (e) { /* asked */ }
+  if (asked) openGuide();
+}
+function openGuide() { GUIDE.open = true; GUIDE.step = 0; drawGuide(); }
+function drawGuide() {
+  let g = $('#guide');
+  if (!g) { g = document.createElement('section'); g.id = 'guide'; g.className = 'guide'; g.setAttribute('role', 'dialog'); g.setAttribute('aria-label', 'Getting started'); document.body.appendChild(g); }
+  const n = GUIDE.step, st = G_STEPS[n], last = n === G_STEPS.length - 1;
+  g.innerHTML = '<div class="g-in"><div class="g-top"><div class="g-dots" aria-label="Step ' + (n + 1) + ' of ' + G_STEPS.length + '">' + G_STEPS.map((x, i) => '<i class="' + (i === n ? 'on' : '') + '"></i>').join('') + '</div>' +
+    '<button class="btn sm" id="guideSkip" data-act="guide-skip">Skip</button></div>' + st.art + '<h2 class="g-t" id="guideTitle">' + st.t + '</h2><p class="g-p">' + st.p + '</p>' + (n === 0 ? G_WORKS : '') +
+    '<div class="g-acts">' + (last ? '<button class="btn primary" id="guideSample" data-act="guide-sample">Try the sample beat</button><button class="link-btn" id="guideUpload" data-act="guide-upload">Upload a video</button>'
+      : '<button class="btn primary" id="guideNext" data-act="guide-next">Next</button>' + (n === 0 ? '<button class="link-btn" id="guideHave" data-act="guide-upload">I already have videos, take me to Upload</button>' : '')) + '</div></div>';
+  g.hidden = false;
+}
+function closeGuide() { GUIDE.open = false; try { localStorage.setItem('hp.guided', '1'); } catch (e) { /* fine */ } const g = $('#guide'); if (g) g.remove(); }
+/* a short beat made right here, so a first upload is one tap away (and nobody else's sound) */
+async function sampleBeat() {
+  const OAC = window.OfflineAudioContext || window.webkitOfflineAudioContext, sr = 44100, bpm = 140, beats = 16, spb = 60 / bpm, len = Math.ceil(sr * beats * spb);
+  const ctx = new OAC(2, len, sr), out = ctx.destination;
+  const noise = ctx.createBuffer(1, sr, sr), nd = noise.getChannelData(0); for (let i = 0; i < nd.length; i++) nd[i] = Math.random() * 2 - 1;
+  const env = (g, t, a, peak, d) => { g.gain.setValueAtTime(0.0001, t); g.gain.exponentialRampToValueAtTime(peak, t + a); g.gain.exponentialRampToValueAtTime(0.0001, t + d); };
+  const hit = (t, type, f, q, peak, d) => { const s = ctx.createBufferSource(), fl = ctx.createBiquadFilter(), g = ctx.createGain(); s.buffer = noise; fl.type = type; fl.frequency.value = f; if (q) fl.Q.value = q; env(g, t, 0.002, peak, d); s.connect(fl); fl.connect(g); g.connect(out); s.start(t); s.stop(t + d + 0.02); };
+  const bass = [55, 55, 65.41, 49];
+  for (let b = 0; b < beats; b++) {
+    const t = b * spb;
+    const o = ctx.createOscillator(), g = ctx.createGain(); o.frequency.setValueAtTime(150, t); o.frequency.exponentialRampToValueAtTime(42, t + 0.16); env(g, t, 0.004, 0.9, 0.34); o.connect(g); g.connect(out); o.start(t); o.stop(t + 0.36);
+    hit(t + spb / 2, 'highpass', 7000, 0, 0.22, 0.05);
+    if (b % 4 === 1 || b % 4 === 3) hit(t, 'bandpass', 1800, 0.8, 0.45, 0.16);
+    if (b % 2 === 0) { const bo = ctx.createOscillator(), lp = ctx.createBiquadFilter(), bg = ctx.createGain(); bo.type = 'sawtooth'; bo.frequency.value = bass[(b / 2) % 4]; lp.type = 'lowpass'; lp.frequency.value = 420; env(bg, t, 0.02, 0.3, spb * 1.8); bo.connect(lp); lp.connect(bg); bg.connect(out); bo.start(t); bo.stop(t + spb * 2); }
+  }
+  const buf = await ctx.startRendering(), ch = buf.numberOfChannels, n = buf.length, v = new DataView(new ArrayBuffer(44 + n * ch * 2));
+  const w = (o, str) => { for (let i = 0; i < str.length; i++) v.setUint8(o + i, str.charCodeAt(i)); };
+  w(0, 'RIFF'); v.setUint32(4, 36 + n * ch * 2, true); w(8, 'WAVE'); w(12, 'fmt '); v.setUint32(16, 16, true); v.setUint16(20, 1, true); v.setUint16(22, ch, true); v.setUint32(24, sr, true);
+  v.setUint32(28, sr * ch * 2, true); v.setUint16(32, ch * 2, true); v.setUint16(34, 16, true); w(36, 'data'); v.setUint32(40, n * ch * 2, true);
+  const d = []; for (let c = 0; c < ch; c++) d.push(buf.getChannelData(c));
+  let o = 44; for (let i = 0; i < n; i++) for (let c = 0; c < ch; c++) { const x = Math.max(-1, Math.min(1, d[c][i] * 0.8)); v.setInt16(o, x < 0 ? x * 0x8000 : x * 0x7fff, true); o += 2; }
+  return new File([v.buffer], 'Sample beat.wav', { type: 'audio/wav' });
+}
+async function addSample() {
+  try { V14.sample = true; queueFiles([await sampleBeat()]); }
+  catch (e) { V14.sample = false; toast('The sample beat could not be made here. Upload a video instead.'); go('upload'); }
+}
+/* ----- V14: Name it, right after an upload ----- */
+function nameItSheet(id, cut) {
+  const t = track(id); if (!t || sheetOpen() || GUIDE.open) return;
+  const keep = /^Upload \d+$/.test(t.title) ? '' : t.title;
+  sheet('<div class="nameit-head">' + trackCover(t) + '<span class="grow"><span class="nameit-t">Upload added</span><span class="sub nameit-ok">' + IC.tick + fmt(t.dur) + (cut ? ', end clip removed' : '') + '</span></span></div>' +
+    '<form data-form="rename"><label class="nameit-l" for="renameInput">Name it</label><input type="text" id="renameInput" name="tname" maxlength="80" value="' + esc(keep) + '" placeholder="Like Phonk leg day" data-focus autocomplete="off">' +
+    '<p class="sub">Skip and it stays ' + esc(t.title) + '. You can rename it any time.</p>' +
+    '<div class="pair"><button type="button" class="btn" id="nameSkip" data-act="sheet-close">Skip</button><button type="submit" class="btn primary" id="nameSave">Save</button></div></form>', { id, kind: 'nameit' });
+}
+function afterImports(added, newId, cut) {
+  if (V14.sample) { V14.sample = false; if (added === 1 && newId) { go('home'); ACT.play({ id: newId, ctx: 'all' }); } return; }
+  if (added === 1 && newId && S.opt.nameIt && !window.__HP_QUIET) setTimeout(() => nameItSheet(newId, cut), 260);
+}
+/* ----- V14: not losing uploads ----- */
+function trashCloudBytes() {
+  if (!SYNC.st || !S.trash.length) return 0;
+  const ids = new Set(); S.trash.forEach(t => blobRefs('tracks', t, true).forEach(x => ids.add(x)));
+  let b = 0; SYNC.st.up.forEach(x => { if (ids.has(x)) b += store.blobSize(x); }); return b;
+}
+function binFree() { const b = SYNC.on ? trashCloudBytes() : 0; return b ? '<p class="sub" id="binFree">Emptying it frees about ' + fmtBytes(b) + ' of cloud space.</p>' : ''; }
+V14.persisted = null;
+function checkPersist() {
+  try { if (!navigator.storage || !navigator.storage.persisted) return; navigator.storage.persisted().then(v => { const was = V14.persisted; V14.persisted = !!v; if (was !== V14.persisted && S.tab === 'settings') render(); }).catch(() => {}); } catch (e) { /* unknown */ }
+}
+function protectRow() {
+  if (V14.persisted == null) return '';
+  return '<div class="set"><div class="grow"><div class="set-t">' + (V14.persisted ? 'Protected on this device' : 'Not protected yet') + '</div><p class="sub' + (V14.persisted ? ' ok-line' : '') + '" id="protectSub">' +
+    (V14.persisted ? 'This device keeps your library even when space runs low.' : 'When space runs low, this device could clear the library. Back up, or sign in to keep a copy in the cloud.') + '</p></div>' +
+    (V14.persisted ? '' : '<button class="btn sm" id="protectBtn" data-act="persist-ask">Protect</button>') + '</div>';
+}
+const lsNum = k => { try { return +localStorage.getItem(k) || 0; } catch (e) { return 0; } };
+const lsSet = (k, v) => { try { localStorage.setItem(k, String(v)); } catch (e) { /* not kept */ } };
+function markBackup() { lsSet('hp.lastBackup', Date.now()); }
+function backupNudge() {
+  if (SYNC.sess || !store || !store.canWrite || !S.tracks.length) return '';
+  const now = Date.now(), last = lsNum('hp.lastBackup'), since = lsNum('hp.since') || now, base = Math.max(last, since);
+  if (now - base < 30 * 86400000 || now < lsNum('hp.nudgeLater')) return '';
+  const days = Math.floor((now - (last || since)) / 86400000);
+  return '<div class="nudge" id="nudge"><div><div class="nudge-t">Back up your library?</div><p class="sub">' + (last ? 'Your last backup was ' + days + ' days ago.' : 'You have not made a backup yet.') +
+    ' You are not signed in, so this device has the only copy.</p></div><div class="nudge-b"><button class="btn sm primary" id="nudgeGo" data-act="nudge-backup">Back up now</button><button class="btn sm" id="nudgeLater" data-act="nudge-later">Not now</button></div></div>';
+}
+
+"""
+
+ACTS_B = r"""  'guide-next'() { GUIDE.step = Math.min(G_STEPS.length - 1, GUIDE.step + 1); drawGuide(); },
+  'guide-skip'() { closeGuide(); },
+  'guide-upload'() { closeGuide(); go('upload'); },
+  'guide-sample'() { closeGuide(); addSample(); },
+  'guide-show'() { openGuide(); },
+  'nudge-backup'() { ACT.backup(); },
+  'nudge-later'() { lsSet('hp.nudgeLater', Date.now() + 14 * 86400000); render(); },
+  'persist-ask'() { try { navigator.storage.persist().then(v => { V14.persisted = !!v; render(); if (!v) toast('This device did not agree yet. Adding EarWorm to your home screen helps.'); }).catch(() => {}); } catch (e) { /* no */ } },
+"""
+
+
+def apply_b(d):
+    d.before('</style>', CSS_B)
+    # the name: EarWorm, one word, two colors kept
+    d.rep('Ear Worm', 'EarWorm', 13)
+    d.rep('Ear <b>Worm</b>', 'Ear<b>Worm</b>', 2)
+    d.rep('If you set it up before the name changed, it is listed as HighestPeak.', 'If you set it up before the name changed, it may be listed as HighestPeak or Ear Worm.')
+    # options: Name new uploads
+    d.rep("syncVideo: false, glass: true };", "syncVideo: false, glass: true, nameIt: true };")
+    d.rep("'syncVideo', 'glass'].forEach(k =>", "'syncVideo', 'glass', 'nameIt'].forEach(k =>")
+    d.rep("      setRow('Join uploads', 'Adds Join to the options of each upload, to stitch two or more into one that loops as a whole.', swBtn('join', 'Join uploads')));",
+          "      setRow('Join uploads', 'Adds Join to the options of each upload, to stitch two or more into one that loops as a whole.', swBtn('join', 'Join uploads')) +\n"
+          "      setRow('Name new uploads', 'Right after an upload, ask what to call it.', swBtn('nameIt', 'Name new uploads')) +\n"
+          "      setRow('First-open guide', 'How to get videos into EarWorm, step by step.', '<button class=\"btn sm\" id=\"guideShow\" data-act=\"guide-show\">Show</button>'));")
+    d.rep("'Join uploads': 'merge combine stitch',", "'Join uploads': 'merge combine stitch', 'Name new uploads': 'rename title name ask', 'First-open guide': 'help tutorial how start guide intro',")
+    d.rep("setRow('Your rotation', 'What you played last and what you play most, in one small grid.'", "setRow('Your rotation', 'Quick picks of what you played last and play most, and Recently played with big covers.'")
+    # Name it: remember the new upload, then ask once the import is done
+    d.rep("  const id = store.id(), title = autoName(job.file.name);", "  const id = store.id(), title = autoName(job.file.name); job.newId = id;")
+    d.rep("  let added = 0, trimmedCount = 0, asked = 0; VID.missed = 0; VID.full = false;", "  let added = 0, trimmedCount = 0, asked = 0, lastNew = null; VID.missed = 0; VID.full = false;")
+    d.rep("else { added++; if (r === 'trimmed') trimmedCount++; } }", "else { added++; lastNew = job.newId || null; if (r === 'trimmed') trimmedCount++; } }")
+    d.rep("  if (added) toast((added === 1 ? 'Upload added.' : added + ' uploads added.') + note + vnote);",
+          "  if (added) { toast((added === 1 ? 'Upload added.' : added + ' uploads added.') + note + vnote); afterImports(added, lastNew, trimmedCount > 0); }")
+    # the guide comes after the sync invite, on an empty library
+    d.rep("function render() {\n", "function render() {\n  if (!GUIDE.open && !S.tracks.length) setTimeout(maybeGuide, 0);\n")
+    d.rep("function closeSheet() {\n", "function closeSheet() {\n  setTimeout(maybeGuide, 400);\n")
+    # cloud space sitting in Recently deleted
+    d.rep("function cloudText() { if (!SYNC.st) return ''; let b = 0; SYNC.st.up.forEach(id => { b += store.blobSize(id); }); return 'About ' + fmtBytes(b) + ' of 1 GB cloud space used'; }",
+          "function cloudText() { if (!SYNC.st) return ''; let b = 0; SYNC.st.up.forEach(id => { b += store.blobSize(id); }); const tb = trashCloudBytes(); return 'About ' + fmtBytes(b) + ' of 1 GB cloud space used' + (tb ? ', ' + fmtBytes(tb) + ' of it in Recently deleted' : ''); }")
+    d.rep("(SYNC.on ? ' on every device' : '') + '.</p>' +\n    (list.length ?", "(SYNC.on ? ' on every device' : '') + '.</p>' + binFree() +\n    (list.length ?")
+    # whether this device protects the library
+    d.rep("'</p></div></div>' + binRow()) +", "'</p></div></div>' + protectRow() + binRow()) +")
+    d.rep("{ k: 'library', name: 'Library and storage', sub: () => 'Space used, recently deleted, clear library' }",
+          "{ k: 'library', name: 'Library and storage', sub: () => (V14.persisted === true ? 'Protected on this device, space used' : V14.persisted === false ? 'Not protected yet, space used' : 'Space used') + ', recently deleted, clear library' }")
+    # the backup nudge (people who are not signed in), and remembering when a backup was made
+    d.rep("bkSay('Backup saved: ' + what + '.' + left);", "markBackup(); bkSay('Backup saved: ' + what + '.' + left);")
+    d.rep("if (canShareFile(file)) { BK.file = file; bkSay(", "if (canShareFile(file)) { markBackup(); BK.file = file; bkSay(")
+    d.rep("return '<h2 class=\"sec-t\">' + cur.name + '</h2>'", "return (cur.k === 'quick' ? backupNudge() : '') + '<h2 class=\"sec-t\">' + cur.name + '</h2>'")
+    d.rep("  return group('Quick settings', quickBody()) +", "  return backupNudge() + group('Quick settings', quickBody()) +")
+    d.after("  const first = !S.ready; S.ready = true;", "\n  checkPersist(); if (S.tracks.length && !lsNum('hp.since')) lsSet('hp.since', Date.now());")
+    d.before('/* ---------- loudness, for volume leveling ---------- */', GUIDE_JS)
+    d.after("const ACT = {\n", ACTS_B)
+    d.rep("window.__gymTapes = { isPC: () => isPC(),", "window.__gymTapes = { isPC: () => isPC(), cloudText, trashCloudBytes, toggleLike: id => toggleLike(id),")
