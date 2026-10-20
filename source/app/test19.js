@@ -48,6 +48,7 @@ async function device(browser, name, o) {
 
   /* ===== phone: the floating glass tab bar and mini player ===== */
   const P = await device(browser, 'phone', { report: true });
+  const VER = await P.G(() => window.__gymTapes.VERSION);   // V14, V14.1, V14.2...
   await P.add([DIR + '/media/two-tones.mp3', DIR + '/media/mono-low.wav', DIR + '/media/Leg-day-beeps.mp4', DIR + '/media/all-black.mp4'], 4);
   await P.page.click('#tabHome'); await sleep(300);
   const nav = await P.box('#nav'), navCss = await P.G(() => { const s = getComputedStyle(document.getElementById('nav')); return { blur: s.backdropFilter || s.webkitBackdropFilter, r: s.borderRadius }; });
@@ -159,8 +160,8 @@ async function device(browser, name, o) {
   await C.page.setViewportSize({ width: 1440, height: 900 }); await sleep(300);
   ok('the full-screen player fits: play and the volume are on screen at 1440x900, 1366x768 and 1280x720 (V14.1)', fits.every(f => f.play <= f.h && f.vol <= f.h && f.scroll === 0), fits);
   await C.page.keyboard.press('Escape'); await sleep(400);
-  const sb = await C.G(() => getComputedStyle(document.documentElement).scrollbarWidth);
-  ok('scrollbars are thin on a computer', sb === 'thin', sb);
+  const sb = await C.G(() => { const d = document.createElement('div'); d.style.cssText = 'position:fixed;width:100px;height:100px;overflow:scroll'; d.innerHTML = '<div style="height:500px"></div>'; document.body.appendChild(d); const w = d.offsetWidth - d.clientWidth; d.remove(); return w; });
+  ok('scrollbars are thin on a computer (10px, since V14.2 without the browser\'s arrow buttons)', sb === 10, sb);
 
   /* Settings search: no section stays highlighted while searching */
   await C.page.click('#tabSettings'); await sleep(300);
@@ -250,19 +251,19 @@ async function device(browser, name, o) {
 
   /* ===== V14 chunk C: tester tools ===== */
   const pg = mock.pings.slice();
-  ok('once a week each device sends an anonymous count: a random id, the week, the version, phone or computer, nothing else', pg.length === 1 && /^[A-Za-z0-9]{8,64}$/.test(pg[0].device) && pg[0].week === await P.G(() => window.__gymTapes.isoWeek(new Date())) && pg[0].version === 'V14.1' && pg[0].kind === 'phone' && Object.keys(pg[0]).length === 4, pg);
+  ok('once a week each device sends an anonymous count: a random id, the week, the version, phone or computer, nothing else', pg.length === 1 && /^[A-Za-z0-9]{8,64}$/.test(pg[0].device) && pg[0].week === await P.G(() => window.__gymTapes.isoWeek(new Date())) && pg[0].version === VER && pg[0].kind === 'phone' && Object.keys(pg[0]).length === 4, pg);
   await P.page.reload(); await P.ready(); await sleep(2200);
   ok('not twice in the same week', mock.pings.length === 1, mock.pings.length);
   await P.G(() => window.__gymTapes.report(new Error('V14 test crash'), 'test')); await sleep(400);
   const hit = sentryHits.find(h => /V14 test crash/.test(h.body || '')), lines = hit ? hit.body.trim().split('\n').map(l => JSON.parse(l)) : [];
   const ev = lines[2] || {};
   ok('a crash report goes to the EarWorm project in Sentry', !!hit && /\/api\/4512286125588480\/envelope\//.test(hit.url) && /sentry_key=cc25cb6e30f18962f6c732604894a377/.test(hit.url) && lines[1] && lines[1].type === 'event', hit && hit.url);
-  ok('it says what broke and which version, and nothing about the person', ev.exception && ev.exception.values[0].value === 'V14 test crash' && ev.release === 'earworm@V14.1' && ev.tags && ev.tags.device === 'phone' && !ev.user && !JSON.stringify(ev).match(/ip_address|email/), { release: ev.release, tags: ev.tags, user: ev.user });
+  ok('it says what broke and which version, and nothing about the person', ev.exception && ev.exception.values[0].value === 'V14 test crash' && ev.release === 'earworm@' + VER && ev.tags && ev.tags.device === 'phone' && !ev.user && !JSON.stringify(ev).match(/ip_address|email/), { release: ev.release, tags: ev.tags, user: ev.user });
   ok('and it tells Sentry not to keep the IP address', !!(ev.sdk && ev.sdk.settings && ev.sdk.settings.infer_ip === 'never'), ev.sdk);
   ok('with a stack trace Sentry can read', ev.exception && ev.exception.values[0].stacktrace.frames.length > 0 && ev.exception.values[0].stacktrace.frames.every(f => f.lineno > 0));
   await P.page.click('#tabSettings'); await sleep(300);
   const ab = await P.G(() => ({ sw: (document.getElementById('sw-improve') || {}).getAttribute && document.getElementById('sw-improve').getAttribute('aria-checked'), v: (document.getElementById('aboutVersion') || {}).textContent, sub: (document.querySelector('.about .sub') || {}).textContent }));
-  ok('Settings: Help improve EarWorm is on, says what it sends, and shows the version', ab.sw === 'true' && /No names, no emails/.test(ab.sub) && ab.v === 'EarWorm V14.1', ab);
+  ok('Settings: Help improve EarWorm is on, says what it sends, and shows the version', ab.sw === 'true' && /No names, no emails/.test(ab.sub) && ab.v === 'EarWorm ' + VER, ab);
   await P.shot('v14-settings');
   await P.page.click('#sw-improve'); await sleep(200);
   const before2 = sentryHits.length; await P.G(() => { window.__gymTapes.report(new Error('should not send'), 'test'); localStorage.removeItem('hp.pinged'); }); await sleep(300);
@@ -278,7 +279,7 @@ async function device(browser, name, o) {
   ok('a bad email is caught before sending', /does not look right/.test(await P.G(() => document.getElementById('fbMsg').textContent)) && mock.feedback.length === 0);
   await P.page.fill('#fbEmail', 'tester@example.com'); await P.page.click('#fbSend'); await sleep(800);
   const fbk = mock.feedback[0] || {};
-  ok('it sends the message (and the email for a reply), then says thanks', mock.feedback.length === 1 && fbk.message === 'Gym mode is fire' && fbk.email === 'tester@example.com' && fbk.version === 'V14.1' && /Thanks, it is sent/.test(await P.G(() => document.getElementById('toast').textContent)), fbk);
+  ok('it sends the message (and the email for a reply), then says thanks', mock.feedback.length === 1 && fbk.message === 'Gym mode is fire' && fbk.email === 'tester@example.com' && fbk.version === VER && /Thanks, it is sent/.test(await P.G(() => document.getElementById('toast').textContent)), fbk);
   /* what's new */
   await P.page.click('#newsBtn'); await sleep(300);
   const nw = await P.G(() => ({ h: document.querySelector('#sheetPanel h2').textContent, n: document.querySelectorAll('.news li').length }));

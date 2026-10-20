@@ -70,7 +70,7 @@ body.no-glass .f-top .icon-btn,body.no-glass .f-watch,body.no-glass .full .chips
 @keyframes rowIn{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:none}}
 ::view-transition-group(np-cover){animation-duration:.3s;animation-timing-function:cubic-bezier(.2,.9,.25,1)}
 ::view-transition-old(root),::view-transition-new(root){animation-duration:.22s}
-.vt-on .full{animation:none}
+.vt-on .full,.full.vt-in{animation:none}   /* V14.2: opened with the cover grow, the old slide-up stays off (it used to restart: the double take) */
 @media (prefers-reduced-motion: reduce){
   #view.enter .list > .row,#view.enter .tile,#view.enter .rot,.heart[aria-pressed="true"] svg,.burst,.full.gym .gym-hint{animation:none}
   .nav,.player{transition:none!important}
@@ -81,8 +81,9 @@ body.no-glass .f-top .icon-btn,body.no-glass .f-watch,body.no-glass .full .chips
   .app{padding-bottom:calc(60px + var(--player-h,0px) + var(--nav-h,66px) + env(safe-area-inset-bottom,0px))}
   .nav{left:50%;right:auto;bottom:calc(12px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);width:min(520px,calc(100% - 24px));box-sizing:border-box;padding:6px;border-radius:34px;
     transition:left .34s cubic-bezier(.2,.9,.25,1.1),width .34s cubic-bezier(.2,.9,.25,1.1),transform .34s cubic-bezier(.2,.9,.25,1.1),padding .34s}
-  .nav-in{max-width:none}
-  .nav button{min-height:54px;border-radius:27px;font-size:10.5px;transition:background .2s,color .2s}
+  .nav-in{max-width:none;display:flex;align-items:center}
+  .nav button{flex:1 1 0;overflow:hidden;white-space:nowrap;min-height:54px;border-radius:27px;font-size:10.5px;
+    transition:flex-grow .34s cubic-bezier(.2,.9,.25,1),opacity .2s ease,font-size .26s ease,gap .26s ease,padding .34s,background .2s,color .2s}
   .nav button[aria-selected="true"]{background:color-mix(in srgb,var(--ink) 11%,transparent);color:var(--accent-ink)}
   .nav .plus{width:36px;height:26px;border-radius:13px;background:var(--accent);color:var(--on-accent)}
   .player{left:50%;right:auto;transform:translateX(-50%);width:min(520px,calc(100% - 24px));padding:0;bottom:calc(var(--nav-h,66px) + 20px + env(safe-area-inset-bottom,0px));
@@ -96,9 +97,9 @@ body.no-glass .f-top .icon-btn,body.no-glass .f-watch,body.no-glass .full .chips
   .toast{bottom:calc(var(--player-h,0px) + var(--nav-h,66px) + 30px + env(safe-area-inset-bottom,0px))}
   /* scrolling down: the tab bar shrinks to one round button and the mini player slides in next to it */
   body.nav-min .nav{left:12px;transform:none;width:62px;padding:3px}
-  body.nav-min .nav-in{grid-template-columns:minmax(0,1fr)}
-  body.nav-min .nav button:not([aria-selected="true"]),body.nav-min .nav .dot{display:none}
-  body.nav-min .nav button{font-size:0;gap:0;min-height:54px}
+  body.nav-min .nav button{font-size:0;gap:0}
+  body.nav-min .nav button:not([aria-selected="true"]){flex-grow:.0001;opacity:0;padding:0;pointer-events:none}
+  body.nav-min .nav .dot{opacity:0}
   body.nav-min .player{left:84px;transform:none;width:calc(100% - 96px);bottom:calc(12px + env(safe-area-inset-bottom,0px))}
   body.nav-min .player.mini .player-in{border-radius:31px}
   body.nav-min .player.mini .now .cover{border-radius:50%}
@@ -151,8 +152,9 @@ body.no-glass .f-top .icon-btn,body.no-glass .f-watch,body.no-glass .full .chips
   body.no-glass .full .f-side{background:var(--raise);-webkit-backdrop-filter:none;backdrop-filter:none}
   .full .f-side .list > .row{margin-inline:0}
   /* thin scrollbars that only show while scrolling */
-  *{scrollbar-width:thin;scrollbar-color:color-mix(in srgb,var(--ink) 22%,transparent) transparent}
   ::-webkit-scrollbar{width:10px;height:10px}
+  ::-webkit-scrollbar-button{display:none;width:0;height:0}
+  ::-webkit-scrollbar-corner{background:transparent}
   ::-webkit-scrollbar-track{background:transparent}
   ::-webkit-scrollbar-thumb{background-color:color-mix(in srgb,var(--ink) 22%,transparent);border-radius:10px;border:3px solid transparent;background-clip:padding-box}
   html:not(.scrolling) ::-webkit-scrollbar-thumb{background-color:transparent}
@@ -170,6 +172,7 @@ const V14 = { touching: false, lastTouch: 0, y: 0, skip: 0 };
 function v14Player(t) {
   document.body.classList.toggle('has-np', !!t && isPC());
   document.body.classList.toggle('no-glass', S.opt.glass === false);
+  navRest();
 }
 /* on a computer, the Settings side list shows no section as open while searching */
 function sideCur() {
@@ -204,14 +207,33 @@ function vtSwap(update, open) {
 /* phones: scrolling down with a finger shrinks the tab bar, scrolling up or reaching the top brings it back */
 document.addEventListener('touchstart', () => { V14.touching = true; }, { passive: true });
 document.addEventListener('touchend', () => { V14.touching = false; V14.lastTouch = Date.now(); }, { passive: true });
+/* V14.2: Settings, Look, Tab bar: Full, Shrinks when scrolling (the default) or Always small. It waits for a real scroll
+   (about 30px one way) instead of flipping on every few pixels. */
+const TABBAR = { acc: 0, open: 0, t: 0 };
+const navMode = () => S.opt.nav || 'scroll';
+function navSet(min) { document.body.classList.toggle('nav-min', !!min && !isPC()); }
+function navRest() { if (TABBAR.open) return; const m = navMode(); if (m === 'small') navSet(true); else if (m === 'full') navSet(false); }
 window.addEventListener('scroll', () => {
   const y = window.scrollY, dy = y - V14.y; V14.y = y;
   if (isPC() || S.full) return;
-  if (y < 80) { document.body.classList.remove('nav-min'); return; }
+  const m = navMode();
+  if (m === 'full') return navSet(false);
+  if (m === 'small') { if (TABBAR.open && Math.abs(dy) > 2) { TABBAR.open = 0; navSet(true); } return; }
+  if (y < 80) { TABBAR.acc = 0; return navSet(false); }
   if (!(V14.touching || Date.now() - V14.lastTouch < 1200)) return;
-  if (dy > 6) document.body.classList.add('nav-min'); else if (dy < -6) document.body.classList.remove('nav-min');
+  TABBAR.acc = (dy > 0) === (TABBAR.acc > 0) ? TABBAR.acc + dy : dy;
+  if (TABBAR.acc > 28) navSet(true); else if (TABBAR.acc < -28) navSet(false);
 }, { passive: true });
-document.addEventListener('click', e => { if (e.target.closest && e.target.closest('#nav')) document.body.classList.remove('nav-min'); }, true);
+document.addEventListener('click', e => {
+  if (isPC() || !(e.target.closest && e.target.closest('#nav'))) return;
+  clearTimeout(TABBAR.t);
+  if (document.body.classList.contains('nav-min')) {            // tapping the round button opens the full bar
+    e.stopPropagation(); navSet(false); TABBAR.acc = 0;
+    if (navMode() === 'small') { TABBAR.open = Date.now(); TABBAR.t = setTimeout(() => { TABBAR.open = 0; navRest(); }, 4000); }
+    return;
+  }
+  if (navMode() === 'small') TABBAR.t = setTimeout(() => { TABBAR.open = 0; navRest(); }, 700);   // picked a tab: tuck it back in
+}, true);
 /* computers: scrollbars show while scrolling, then fade */
 let scrollFade = 0;
 document.addEventListener('scroll', () => { if (!isPC()) return; document.documentElement.classList.add('scrolling'); clearTimeout(scrollFade); scrollFade = setTimeout(() => document.documentElement.classList.remove('scrolling'), 900); }, { passive: true, capture: true });
@@ -304,9 +326,9 @@ def apply(d):
           "  const pp = $('#pProg'), gp = $('#gymProg'); if (pp) pp.style.width = (f * 100) + '%'; if (gp && S.full) gp.style.width = (f * 100) + '%';")
     # opening and closing the big player
     d.rep("  S.full = true; f.hidden = false; f.scrollTop = 0; updatePlayer();",
-          "  S.full = true; vtSwap(() => { f.hidden = false; f.scrollTop = 0; f.classList.remove('gym'); updatePlayer(); }, true);")
+          "  S.full = true; f.classList.toggle('vt-in', vtOK()); vtSwap(() => { f.hidden = false; f.scrollTop = 0; f.classList.remove('gym'); updatePlayer(); }, true);")
     d.rep("  const f = $('#full'), done = () => { f.hidden = true; f.classList.remove('out'); };",
-          "  const f = $('#full'), done = () => { f.hidden = true; f.classList.remove('out', 'gym'); };")
+          "  const f = $('#full'), done = () => { f.hidden = true; f.classList.remove('out', 'gym', 'vt-in'); };")
     d.rep("  if (now === true || calm) return done();\n  f.classList.add('out');",
           "  if (now === true || calm) return done();\n  if (vtOK()) return vtSwap(done, false);\n  f.classList.add('out');")
     # Settings search on a computer: no section stays highlighted
@@ -314,6 +336,7 @@ def apply(d):
     d.before('/* ---------- loudness, for volume leveling ---------- */', EXTRA)
     apply_b(d)
     apply_c(d)
+    apply_d(d)
 
 
 # ---------------------------------------------------------------------------------------------------------------------
@@ -551,7 +574,7 @@ CSS_C = r"""
 """
 
 TOOLS_JS = r"""/* ----- V14: tester tools: crash reports, an anonymous weekly count, feedback, what's new ----- */
-const VERSION = 'V14.1', NEWS = 'V14';   // NEWS: the update the What's new popup is about (a bug fix doesn't show it again)
+const VERSION = 'V14.2', NEWS = 'V14';   // NEWS: the update the What's new popup is about (a bug fix doesn't show it again)
 const WHATS_NEW = [
   ['A new look', 'Frosted glass on the controls, EarWorm lime, bigger covers, and a Now playing panel on computers.'],
   ['Gestures', 'Swipe the mini player to skip, drag the big player down to close it, double-tap its cover to like.'],
@@ -664,3 +687,92 @@ def apply_c(d):
     d.before('/* ---------- loudness, for volume leveling ---------- */', TOOLS_JS)
     d.after("const ACT = {\n", ACTS_C)
     d.rep("window.__gymTapes = { isPC: () => isPC(),", "window.__gymTapes = { isPC: () => isPC(), VERSION, isoWeek, report, deviceId,")
+
+
+# ---------------------------------------------------------------------------------------------------------------------
+# V14.2: the computer's full-screen player laid out like the approved mockup (cover on the left with Watch original on it;
+# name, wave, controls and volume, a short Up next and the keys on the right), the tab bar setting, and the first-open
+# guide for brand new accounts too.
+
+CSS_D = r"""
+/* ===================== V14.2 ===================== */
+.f-art,.f-info{display:contents}
+.f-keys{display:none}
+@media (min-width: 900px){
+  .full{--cv:min(42vw,calc(100vh - 150px),820px);padding-block:0}
+  .full-in{max-width:none;min-height:100vh;box-sizing:border-box;padding:18px clamp(28px,4vw,72px)}
+  .f-body{flex:1;display:grid;grid-template-columns:var(--cv) minmax(320px,min(680px,36vw));justify-content:center;align-items:center;gap:clamp(32px,4.5vw,80px);margin:0}
+  .f-main{display:contents}
+  .f-art{display:block;position:relative;width:var(--cv)}
+  .f-art .f-cover{width:100%;margin:0}
+  .f-art .f-cover .cover{border-radius:28px}
+  .f-art .f-watch{position:absolute;left:16px;bottom:16px;margin:0;z-index:1}
+  .f-info{display:grid;grid-template-columns:minmax(0,1fr) auto;column-gap:24px;row-gap:12px;height:max(var(--cv),470px);min-width:0;
+    grid-template-rows:auto auto auto auto auto minmax(0,1fr) auto;grid-template-areas:"head head" "wave wave" "times times" "ctl vol" "chips chips" "side side" "keys keys"}
+  .f-info>.f-head{grid-area:head}
+  .f-info>.wave,.f-info>.gym-prog,.f-info>.gym-hint{grid-area:wave;margin:0}
+  .f-info>.times{grid-area:times;margin-top:-6px}
+  .f-info>.ctl{grid-area:ctl;justify-content:space-between;gap:6px;min-width:0}
+  .f-info>.ctl>*{flex-shrink:0}
+  .f-info>.vol{grid-area:vol;width:clamp(120px,11vw,180px);align-self:center}
+  .f-info>.chips{grid-area:chips;justify-content:flex-start}
+  .f-info>.chips:empty{display:none}
+  .f-info>.f-side{grid-area:side;position:static;max-height:none;min-height:0;overflow-y:auto;align-self:stretch}
+  .f-keys{grid-area:keys;display:block;margin:0;font-size:12.5px;color:var(--muted)}
+}
+@media (min-width: 900px) and (max-width: 1180px){
+  .f-info{grid-template-rows:auto auto auto auto auto auto minmax(0,1fr) auto;grid-template-areas:"head head" "wave wave" "times times" "ctl ctl" "vol vol" "chips chips" "side side" "keys keys"}
+  .f-info>.vol{width:auto}
+}
+@media (min-width: 900px){
+  .f-title{font-size:clamp(30px,2.6vw,44px)}
+  /* gym mode on a computer: a bigger cover in the middle, the name and a thin line under it */
+  .full.gym{--cv:min(60vh,600px)}
+  .full.gym .f-body{grid-template-columns:var(--cv);align-content:center;row-gap:20px}
+  .full.gym .f-info{display:flex;flex-direction:column;gap:10px;height:auto}
+  .full.gym .f-keys{display:none}
+  /* no page scrollbar showing behind the full-screen player */
+  html:has(#full:not([hidden])){overflow:hidden}
+}
+@supports not selector(::-webkit-scrollbar){@media (min-width: 900px){*{scrollbar-width:thin;scrollbar-color:color-mix(in srgb,var(--ink) 22%,transparent) transparent}}}
+"""
+
+GUIDE_D = r"""
+/* ----- V14.2: a brand new account made on this device gets the first-open guide too (after its first sync comes back
+   empty). Signing in to an account that already has uploads never shows it. ----- */
+const freshAcct = () => { try { return localStorage.getItem('hp.newAcct') === '1'; } catch (e) { return false; } };
+// ready once a sync has finished and the username box (if the account has no username yet) has had its turn
+const freshReady = () => freshAcct() && !!SYNC.okAt && !SYNC.busy && (SYNC.username !== '' || !!V14.unameShown);
+function guideAfterSync() {
+  if (!freshAcct()) return;
+  if (S.tracks.length) { try { localStorage.removeItem('hp.newAcct'); } catch (e) { /* fine */ } return; }
+  setTimeout(maybeGuide, 400);
+}
+"""
+
+def apply_d(d):
+    d.before('</style>', CSS_D)
+    # the big player's parts in two groups, so a computer can put the cover on the left and the rest on the right
+    d.rep('<div class="f-body"><div class="f-main">\n    <div class="f-cover" id="fCover"></div>', '<div class="f-body"><div class="f-main"><div class="f-art">\n    <div class="f-cover" id="fCover"></div>')
+    d.rep('Watch original</button>', 'Watch original</button></div><div class="f-info">')
+    d.rep('    </div><div class="f-side">', '    <div class="f-side">')
+    d.rep('<div class="list" id="fQueue" data-sortlist="queue"></div>\n    </div></div>',
+          '<div class="list" id="fQueue" data-sortlist="queue"></div>\n    </div><p class="f-keys">Space plays and pauses · Esc closes</p></div></div></div>')
+    # the Tab bar setting (phones)
+    d.rep("glass: true, nameIt: true, improve: true };", "glass: true, nameIt: true, improve: true, nav: 'scroll' };")
+    d.rep("  if (['new', 'old', 'az', 'long', 'short', 'liked', 'top'].indexOf(o.sort) >= 0) d.sort = o.sort;",
+          "  if (['new', 'old', 'az', 'long', 'short', 'liked', 'top'].indexOf(o.sort) >= 0) d.sort = o.sort;\n  if (['full', 'scroll', 'small'].indexOf(o.nav) >= 0) d.nav = o.nav;")
+    d.rep("{ k: 'look', name: 'Look', sub: () => 'Background, glass effects' }", "{ k: 'look', name: 'Look', sub: () => isPC() ? 'Background, glass effects' : 'Background, glass effects, tab bar' }")
+    d.rep("swBtn('glass', 'Glass effects')));",
+          "swBtn('glass', 'Glass effects')) +\n"
+          "    (isPC() ? '' : setCol('Tab bar', S.opt.nav === 'full' ? 'Always the full bar.' : S.opt.nav === 'small' ? 'Always one round button next to the player. Tap it to open the full bar.' : 'Scroll down and it tucks into one round button next to the player. Scroll up and it comes back.', segCtl('nav', S.opt.nav || 'scroll', [['full', 'Full'], ['scroll', 'Shrinks when scrolling'], ['small', 'Always small']]))));")
+    d.rep("'Glass effects': 'glass blur frosted transparent liquid see through',", "'Glass effects': 'glass blur frosted transparent liquid see through', 'Tab bar': 'tab bar tabs navigation bottom small shrink compact scroll',")
+    d.rep("  if (k === 'syncVideo') soon(200);", "  if (k === 'syncVideo') soon(200);\n  if (k === 'nav') { TABBAR.open = 0; navSet(S.opt.nav === 'small'); }")
+    # the first-open guide for brand new accounts
+    d.before('/* ----- V14: not losing uploads ----- */', GUIDE_D)
+    d.rep("|| !store || !store.canWrite || SYNC.sess || sheetOpen()", "|| !store || !store.canWrite || (SYNC.sess && !freshReady()) || sheetOpen()")
+    d.rep("function userSheet(first) {", "function userSheet(first) {\n  V14.unameShown = true;")
+    d.rep("const j = await signUp(email, pw);", "lsSet('hp.newAcct', '1'); const j = await signUp(email, pw);")
+    d.rep("    SYNC.busy = false; SYNC.phase = ''; SYNC.upLeft = SYNC.downLeft = 0; syncShow();", "    SYNC.busy = false; SYNC.phase = ''; SYNC.upLeft = SYNC.downLeft = 0; syncShow(); if (SYNC.okAt && !SYNC.err) guideAfterSync();")
+    d.rep("function closeGuide() { GUIDE.open = false; try { localStorage.setItem('hp.guided', '1'); } catch (e) { /* fine */ }",
+          "function closeGuide() { GUIDE.open = false; try { localStorage.setItem('hp.guided', '1'); localStorage.removeItem('hp.newAcct'); } catch (e) { /* fine */ }")

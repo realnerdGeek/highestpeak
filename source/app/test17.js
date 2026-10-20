@@ -227,8 +227,8 @@ async function makeAccount(D, email) {
   await C.page.keyboard.press(' '); await sleep(300); const p2 = await C.G(() => window.__gymTapes.audio.paused);
   ok('the space bar pauses and plays', p1 === true && p2 === false, { p1, p2 });
   await C.page.click('#player .now-open'); await sleep(500);
-  const fm = await box('.f-main'), fs2 = await box('.f-side');
-  ok('the big player has the picture and controls on the left, up next on the right', fm && fs2 && fs2.x >= fm.x + fm.w - 2 && Math.abs(fs2.y - fm.y) < 60, { fm, fs2 });
+  const fm = await box('.f-art'), fs2 = await box('.f-side');
+  ok('the big player has the picture on the left, up next on the right (V14.2: with the controls over Up next, like the mockup)', fm && fs2 && fs2.x >= fm.x + fm.w - 2 && fs2.y < fm.y + fm.h, { fm, fs2 });
   await C.shot('v12-pc-full');
   await C.page.keyboard.press('Escape'); await sleep(400);
   await C.page.click('#tabLibrary'); await sleep(300); await C.shot('v12-pc-library');
