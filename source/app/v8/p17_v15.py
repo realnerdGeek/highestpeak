@@ -86,7 +86,7 @@ RT_JS = r'''
    that is playing, and playing can move to another device at the same spot. The sound always comes from the playing
    device's own copy. */
 var RT = { ws: null, ref: 0, jref: '', topic: '', joined: false, hb: 0, back: 0, retry: 0, devices: new Map(), remote: null, active: false,
-  sentSig: '', soonT: 0, tick: 0, tokenSent: '', stopped: true, lastErr: '', lastMsg: 0, local: false, volT: 0 };
+  sentSig: '', tookAt: 0, soonT: 0, tick: 0, tokenSent: '', stopped: true, lastErr: '', lastMsg: 0, local: false, volT: 0 };
 const rtUrl = () => (window.__HP_RT_URL || SB.url.replace(/^https/, 'wss') + '/realtime/v1/websocket') + '?apikey=' + encodeURIComponent(SB.key) + '&vsn=1.0.0';
 function devGuess() {
   const u = navigator.userAgent || '';
@@ -147,7 +147,7 @@ function rtOn(m) {
       RT.joined = true; RT.retry = 0; RT.lastErr = '';
       rtSend('presence', { type: 'presence', event: 'track', payload: rtMe() });
       rtCast('hello');
-      if (!audio.paused && track(P.cur)) { RT.active = true; rtCast('took', { state: rtStateObj() }); }
+      if (!audio.paused && track(P.cur)) { RT.active = true; RT.tookAt = Date.now(); rtCast('took', { at: RT.tookAt, state: rtStateObj() }); }
       rtDraw();
     } else { RT.lastErr = String((p.response && p.response.reason) || 'refused'); RT.retry = Math.max(RT.retry, 3); rtDrop(); }
     return;
@@ -170,6 +170,7 @@ function rtMessage(ev, d) {
   rtSeen(d.from, d);
   if (ev === 'hello') { if (RT.active && track(P.cur)) rtState(true); rtDraw(); return; }
   if (ev === 'took') {                                        // another device started playing: this one stops
+    if (!audio.paused && RT.active && +d.at && +d.at < RT.tookAt) { rtCast('took', { at: RT.tookAt, state: rtStateObj() }); return; }   // both started at once: the newer one plays
     RT.active = false;
     if (!audio.paused) audio.pause();
     rtRemote(d.state || null, d.from); return;
@@ -202,7 +203,7 @@ function rtSoon(force) { if (!RT.joined) return; clearTimeout(RT.soonT); RT.soon
 function rtLocalPlay() {
   if (!RT.joined || !track(P.cur)) return;
   const was = RT.active; RT.active = true; rtRemote(null);
-  if (!was || RT.local !== 'take') rtCast('took', { state: rtStateObj() }); else rtState(true);
+  if (!was || RT.local !== 'take') { RT.tookAt = Date.now(); rtCast('took', { at: RT.tookAt, state: rtStateObj() }); } else rtState(true);
 }
 /* commands from another device, to this one (the one playing) */
 function rtCommand(d) {
@@ -220,6 +221,7 @@ function rtCommand(d) {
       case 'queue': {
         const ids = (Array.isArray(d.ids) ? d.ids : []).filter(id => typeof id === 'string' && track(id)); if (!ids.length) break;
         if (typeof d.ctx === 'string') P.ctx = d.ctx;
+        if (typeof d.shuffle === 'boolean' && d.shuffle !== S.shuffle) { S.shuffle = d.shuffle; savePrefs(); }
         startQueue(ids, String(d.label || 'Uploads').slice(0, 80), track(d.startId) ? d.startId : null); rtExpectPlay(d.from); break;
       }
       case 'take': {                                           // "play here": start the same upload at the same spot
@@ -383,6 +385,14 @@ ACTS = r'''  'rt-devices'() { devicesSheet(); },
   'rt-name'() { rtNameSheet(); },
 '''
 
+WHATS_NEW = r"""const WHATS_NEW = [
+  ['Play anywhere', 'Signed in on your phone and your computer? They play as one now. Start on one and the other stops.'],
+  ['Control it from anywhere', 'While your computer plays, your phone shows it: play and pause, skip, scrub, volume and what plays, all from your phone. And the other way around.'],
+  ['Move it, same spot', 'Tap the devices button and pick where to play. Or tap Play here. It picks up right where it was.'],
+  ['Tab bar your way', 'Settings, Look, Tab bar: Full, On scroll or Small.'],
+  ['Smoother', 'The big player opens in one smooth move on phones, and the computer\'s full-screen player fits every screen.']
+];"""
+
 def apply(d):
     d.before('</style>', CSS)
     d.before('<section class="player', '<section class="rt-bar" id="remote" hidden aria-label="Playing on another device"></section>\n')
@@ -405,7 +415,7 @@ def apply(d):
     d.rep("  rename(f) {", "  rtname(f) { const v = String(f.elements.dname.value || '').trim().slice(0, 30); try { if (v) localStorage.setItem('hp.devName', v); else localStorage.removeItem('hp.devName'); } catch (e) { /* not kept */ } closeSheet(); if (RT.joined) rtSend('presence', { type: 'presence', event: 'track', payload: rtMe() }); rtAcct(); render(); toast('This device is ' + devName() + '.'); },\n  rename(f) {")
     # what plays: on a device showing another one that plays, taps go to the one playing
     d.rep("function startQueue(ids, label, startId) {\n  if (!ids.length) return;",
-          "function startQueue(ids, label, startId) {\n  if (!ids.length) return;\n  if (rtRoute('queue', { ids: ids.slice(0, 500), label, startId: startId || null, ctx: P.ctx })) return;")
+          "function startQueue(ids, label, startId) {\n  if (!ids.length) return;\n  if (rtRoute('queue', { ids: ids.slice(0, 500), label, startId: startId || null, ctx: P.ctx, shuffle: !!S.shuffle })) return;")
     d.rep("function togglePlay() {\n  if (!P.cur) return;", "function togglePlay() {\n  if (rtRoute('toggle')) return;\n  if (!P.cur) return;")
     # changes on the playing device go out to the others
     d.rep("  try { localStorage.setItem('gymtapes.vol', String(VOL.v)); } catch (e) { /* not kept */ }\n  if (commit) volCommit();",
@@ -415,5 +425,6 @@ def apply(d):
           "    SYNC.busy = false; SYNC.phase = ''; SYNC.upLeft = SYNC.downLeft = 0; syncShow(); if (SYNC.okAt && !SYNC.err) guideAfterSync(); rtSync();")
     d.rep("function syncStop() { SYNC.on = false;", "function syncStop() { SYNC.on = false; setTimeout(rtSync, 0);")
     d.rep("const VERSION = 'V14.2', NEWS = 'V14';", "const VERSION = 'V15', NEWS = 'V15';")
-    d.rep("const WHATS_NEW = [\n", "const WHATS_NEW = [\n  ['Play anywhere', 'Signed in on your phone and your computer? They play as one now. Start on one and the other stops. Control the one playing from the other: play and pause, skip, volume, what plays. Tap the devices button to move it, same spot.'],\n")
+    i = d.s.index('const WHATS_NEW = [\n'); j = d.s.index('\n];', i) + 3
+    d.s = d.s[:i] + WHATS_NEW + d.s[j:]
     d.rep("window.__gymTapes = { isPC: () => isPC(),", "window.__gymTapes = { isPC: () => isPC(), RT, devName, rtSync,")

@@ -66,6 +66,11 @@ async function device(browser, name, o) {
   c = await C.st(); p = await P.st();
   ok('the phone shows "Playing on Windows PC" with what is playing, in place of its own player', shown && p.remote && p.remote.title === c.title && p.remote.playing && !p.playing && /Playing on Windows PC/.test(await P.page.textContent('#remote')) && !(await P.page.isVisible('#player')), p.remote);
   await P.shot('v15-phone-remote');
+  await P.page.emulateMedia({ colorScheme: 'light' }); await sleep(300); await P.shot('v15-phone-remote-light'); await P.page.emulateMedia({ colorScheme: 'dark' });
+  await P.G(() => { document.body.classList.add('nav-min'); }); await sleep(500);
+  const rb = await P.G(() => { const r = document.querySelector('#remote .rt-in').getBoundingClientRect(), n = document.getElementById('nav').getBoundingClientRect(); return { left: Math.round(r.left), navRight: Math.round(n.right), bottom: Math.round(r.bottom), navBottom: Math.round(n.bottom) }; });
+  ok('with the tab bar tucked in, the remote bar slides in next to the round button, like the mini player', rb.left > rb.navRight && Math.abs(rb.bottom - rb.navBottom) < 8, rb);
+  await P.shot('v15-phone-remote-tucked'); await P.G(() => { document.body.classList.remove('nav-min'); }); await sleep(400);
   await P.page.click('#rtToggle');
   ok('pause on the phone pauses the computer', await C.until(() => window.__gymTapes.audio.paused, null, 4000));
   ok('and the phone shows Play', await P.until(() => /^Play on/.test(document.getElementById('rtToggle').getAttribute('aria-label')), null, 3000));
@@ -85,6 +90,11 @@ async function device(browser, name, o) {
   const pick = await P.G(() => { const g = window.__gymTapes; return g.S.tracks.find(t => t.id !== g.RT.remote.id).id; });
   await P.page.click('#tabLibrary'); await sleep(300); await P.page.click('#trackList .row[data-key="' + pick + '"] .row-hit').catch(() => P.page.click('.list .row-hit >> nth=2'));
   ok('picking an upload on the phone plays it on the computer, not on the phone', await C.until(id => window.__gymTapes.P.cur === id && !window.__gymTapes.audio.paused, pick, 5000) && !(await P.st()).playing);
+
+  await P.page.click('#tabHome'); await sleep(300); await P.page.click('[data-act="shuffle-all"]');
+  ok('Shuffle everything on the phone shuffles everything on the computer', await C.until(() => window.__gymTapes.S.shuffle && !window.__gymTapes.audio.paused, null, 5000) && !(await P.st()).playing);
+  await P.page.click('#tabLibrary'); await sleep(300); await P.page.click('#trackList .row[data-key="' + pick + '"] .row-hit').catch(() => {});
+  await C.until(id => window.__gymTapes.P.cur === id, pick, 5000);
 
   /* ===== Play here: it moves to the phone at the same spot ===== */
   await sleep(1500); const spot = (await C.st()).abs;
