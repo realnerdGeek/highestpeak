@@ -1,0 +1,20 @@
+# build output
+app/gym-tapes.html
+app/index.html
+app/_check.js
+app/v8/__pycache__/
+pwa/site/
+# test output
+app/out/
+app/shots/
+# private test videos (copies of real saved videos, kept out of this public repo)
+app/media/33966784-*
+app/media/blue-scene.mp4
+app/media/clip-with-ending.mp3
+app/media/moov-at-end.mp4
+app/media/opus-clip.mp4
+app/media/qt.mov
+app/media/silent.mp4
+app/seed/
+vtest/
+photo/

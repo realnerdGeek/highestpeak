@@ -1,0 +1,22 @@
+\set ON_ERROR_STOP 0
+set role authenticated;
+select set_config('request.jwt.claim.sub', '11111111-1111-1111-1111-111111111111', false);
+insert into public.docs (coll, id, data, m) values ('tracks', 't1', '{"title":"A"}', 1);
+insert into public.docs (coll, id, data, m) values ('tracks', 't1', '{"title":"A2"}', 2) on conflict (user_id, coll, id) do update set data = excluded.data, m = excluded.m;
+select 'A sees own: ' || count(*) from public.docs;
+select 'A data after upsert: ' || (data->>'title') from public.docs where id = 't1';
+insert into storage.objects (bucket_id, name) values ('media', '11111111-1111-1111-1111-111111111111/l123');
+select 'A file ok: ' || count(*) from storage.objects;
+select set_config('request.jwt.claim.sub', '22222222-2222-2222-2222-222222222222', false);
+select 'B sees A docs: ' || count(*) from public.docs;
+select 'B sees A files: ' || count(*) from storage.objects;
+update public.docs set data = '{"title":"hacked"}' where id = 't1';
+delete from public.docs where id = 't1';
+insert into storage.objects (bucket_id, name) values ('media', '11111111-1111-1111-1111-111111111111/evil');
+insert into public.docs (user_id, coll, id, data) values ('11111111-1111-1111-1111-111111111111', 'tracks', 'x', '{}');
+insert into public.docs (coll, id, data) values ('bogus', 'x', '{}');
+reset role;
+select 'after B tried: A title = ' || (data->>'title') || ', rows = ' || (select count(*) from public.docs) from public.docs where id = 't1';
+select 'updated_at set by server: ' || (updated_at is not null) from public.docs where id = 't1';
+set role anon;
+select 'anon sees: ' || count(*) from public.docs;
