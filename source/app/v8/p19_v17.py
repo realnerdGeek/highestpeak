@@ -12,6 +12,24 @@ CSS = r'''
 .snd-tile[aria-pressed="true"] b{color:var(--accent-ink)}
 .lib-filter{display:flex;gap:8px;margin:2px 0 10px}
 .gym-chip.snd-on{background:color-mix(in srgb,var(--accent) 22%,var(--g-over));border-color:color-mix(in srgb,var(--accent) 50%,transparent)}
+/* computers: the tools row stays on one line; a long preset name on the Sound button shortens instead of pushing the gear down */
+@media (min-width: 900px){
+  .f-info>.gym-row{flex-wrap:nowrap;min-width:0}
+  .f-info>.gym-row .gym-chip{flex:none}
+  .f-info>.gym-row .gym-chip[data-act="sound"]{flex:0 1 auto;min-width:36px;overflow:hidden}
+  .f-info>.gym-row .snd-l{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+}
+/* small laptops (the right column is narrow): the tools row stays tight, the Sound button shows only its icon, and Up next keeps
+   at least a row and a half (the column grows instead of squeezing it) */
+@media (min-width: 900px) and (max-width: 1180px){
+  .f-info{height:max(var(--cv),min(calc(100vh - 160px),560px))}
+  .f-info>.f-side{min-height:104px}
+  .f-info>.gym-row{gap:6px}
+  .f-info>.gym-row .gym-chip{padding:0 10px}
+  .f-info>.gym-row .gym-chip .snd-l{display:none}
+  .f-info>.gym-row .gym-chip[data-act="gym-rest"] svg,.f-info>.gym-row .gym-chip[data-act="gym-hiit"] svg{display:none}
+  .f-info>.gym-row .gym-chip[data-act="sound"]{width:36px;padding:0;justify-content:center}
+}
 '''
 
 JS = r'''
@@ -21,7 +39,7 @@ JS = r'''
    locked on iPhones). */
 const SND_PRESETS = {
   normal: { name: 'Normal', sub: 'As it was saved', speed: 1, keepPitch: false, eq: 'flat', verb: 'off', d8: false },
-  slowed: { name: 'Slowed + reverb', sub: 'Lower, slower, roomy', speed: 0.85, keepPitch: false, eq: 'flat', verb: 'hall', d8: false },
+  slowed: { name: 'Slowed + reverb', short: 'Slowed', sub: 'Lower, slower, roomy', speed: 0.85, keepPitch: false, eq: 'flat', verb: 'hall', d8: false },
   sped: { name: 'Sped up', sub: 'Faster and higher', speed: 1.25, keepPitch: false, eq: 'flat', verb: 'off', d8: false },
   bass: { name: 'Bass boost', sub: 'Heavier low end', speed: 1, keepPitch: false, eq: 'bass', verb: 'off', d8: false },
   d8: { name: '8D', sub: 'Moves around your head', speed: 1, keepPitch: false, eq: 'flat', verb: 'room', d8: true }
@@ -103,6 +121,7 @@ on('playing', () => setTimeout(xfIn, 0));
 /* ===================== V17: BPM =====================
    Worked out on this device from the sound: how loud it gets every 10 ms, where it jumps, and how often those jumps
    repeat. Saved with the upload, so it is done once. */
+const BPM_SURE = 0.25;   // how clearly the beat has to repeat (0 to 1) before a number is shown
 function bpmFrom(buf) {
   const sr = buf.sampleRate, hop = Math.max(1, Math.round(sr / 100)), chs = [];
   for (let c = 0; c < buf.numberOfChannels; c++) chs.push(buf.getChannelData(c));
@@ -114,7 +133,9 @@ function bpmFrom(buf) {
   const ac = new Float32Array(maxL + 2);
   for (let L = minL - 1; L <= maxL + 1; L++) { let s = 0; for (let i = L; i < n; i++) s += env[i] * env[i - L]; ac[L] = s / (n - L); }
   let best = minL; for (let L = minL; L <= maxL; L++) if (ac[L] > ac[best]) best = L;
-  if (!(ac[best] > 0)) return null;
+  let ac0 = 0, am = 0; for (let i = 0; i < n; i++) ac0 += env[i] * env[i]; ac0 /= n;
+  for (let L = minL; L <= maxL; L++) am += ac[L]; am /= maxL - minL + 1;
+  if (!(ac[best] > 0) || !(ac0 > am) || (ac[best] - am) / (ac0 - am) < BPM_SURE) return null;   // no steady beat (a tone, talking, one hit): no number
   const a = ac[best - 1], b = ac[best], c = ac[best + 1], den = a - 2 * b + c, lag = best + (den ? 0.5 * (a - c) / den : 0);
   let bpm = 6000 / lag; while (bpm < 80) bpm *= 2; while (bpm > 180) bpm /= 2;
   // where the beats fall: the start that lines up with the most jumps
@@ -191,7 +212,7 @@ def apply(d):
           "      setRow('Snap to the beat', 'In the editor, section edges land on the beat when they are close to one.', swBtn('snapBeat', 'Snap to the beat')) +")
     # the Sound button in the tools row (lit when something is on)
     d.rep("    '<button class=\"gym-chip icon\" data-act=\"gym-opts\" aria-label=\"Gym options\">' + GYM_IC.gear + '</button>';",
-          "    '<button class=\"gym-chip' + (sndPreset() === 'normal' ? '' : ' snd-on') + '\" data-act=\"sound\">' + SND_IC + (sndPreset() && sndPreset() !== 'normal' ? SND_PRESETS[sndPreset()].name : sndPreset() === 'normal' ? 'Sound' : 'Custom sound') + '</button>' +\n"
+          "    '<button class=\"gym-chip' + (sndPreset() === 'normal' ? '' : ' snd-on') + '\" data-act=\"sound\" aria-label=\"Sound: ' + (sndPreset() && sndPreset() !== 'normal' ? SND_PRESETS[sndPreset()].name : sndPreset() === 'normal' ? 'Normal' : 'Custom') + '\">' + SND_IC + '<span class=\"snd-l\">' + (sndPreset() && sndPreset() !== 'normal' ? SND_PRESETS[sndPreset()].short || SND_PRESETS[sndPreset()].name : sndPreset() === 'normal' ? 'Sound' : 'Custom sound') + '</span></button>' +\n"
           "    '<button class=\"gym-chip icon\" data-act=\"gym-opts\" aria-label=\"Gym options\">' + GYM_IC.gear + '</button>';")
     d.before("function gymRow() {", "const SND_IC = '<svg width=\"16\" height=\"16\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2.2\" stroke-linecap=\"round\" aria-hidden=\"true\"><path d=\"M4 10v4M8 7v10M12 4v16M16 8v8M20 11v2\"/></svg>';\n")
     # BPM: worked out for new uploads, shown on rows, sort and filter
@@ -211,8 +232,11 @@ def apply(d):
           "          '<button class=\"icon-btn\" data-act=\"sort\" aria-label=\"Sort uploads\">' + IC.sort + '</button><button class=\"btn sm\" id=\"libSelect\" data-act=\"sel-start\">Select</button></div>' +\n"
           "          (S.tracks.some(t => t.bpm > 0) ? '<div class=\"lib-filter\"><button class=\"gym-chip\" id=\"bpmFilter\" data-act=\"bpm-filter\" aria-pressed=\"' + (S.bpmF === 'fast') + '\">140+ BPM</button></div>' : '')) +")
     # the editor: edges snap to the beat
+    # only a drag snaps: arrow keys and the -/+ buttons move exactly what they say
+    d.rep("function setSel(which, t) {", "function setSel(which, t, snap) {")
     d.rep("  if (which === 'a') ED.a = Math.max(0, Math.min(t, ED.b - gap)); else ED.b = Math.min(ED.dur, Math.max(t, ED.a + gap));",
-          "  t = beatSnap(track(ED.id), t);\n  if (which === 'a') ED.a = Math.max(0, Math.min(t, ED.b - gap)); else ED.b = Math.min(ED.dur, Math.max(t, ED.a + gap));")
+          "  if (snap) t = beatSnap(track(ED.id), t);\n  if (which === 'a') ED.a = Math.max(0, Math.min(t, ED.b - gap)); else ED.b = Math.min(ED.dur, Math.max(t, ED.a + gap));")
+    d.rep("(ev.clientX - grab - rect.left) / rect.width)) * ED.dur);", "(ev.clientX - grab - rect.left) / rect.width)) * ED.dur, true);")
     # silence at the start and end of new uploads
     d.rep("  const src = Object.assign({}, full, { n: seq.length });\n  const out = MP4.mux(full, seq, cut ? MP4.gather(payload, full, seq) : payload);",
           "  let src = Object.assign({}, full, { n: seq.length });\n  let out = MP4.mux(full, seq, cut ? MP4.gather(payload, full, seq) : payload);\n"

@@ -37,6 +37,12 @@ const ff = (expr, d, name) => { const f = OUT + name; execFileSync('ffmpeg', ['-
   const a = await T('click-140'), b = await T('click-100');
   ok('a 140 BPM upload is worked out as 140 BPM', a && Math.abs(a.bpm - 140) <= 2, a);
   ok('a 100 BPM upload as 100 BPM', b && Math.abs(b.bpm - 100) <= 2, b);
+  const noBeat = await G(() => {
+    const make = fn => { const c = new OfflineAudioContext(1, 22050 * 12, 22050), buf = c.createBuffer(1, 22050 * 12, 22050), x = buf.getChannelData(0); for (let i = 0; i < x.length; i++) x[i] = fn(i / 22050); return buf; };
+    let s = 1; const rnd = () => (s = (s * 16807) % 2147483647) / 2147483647 - 0.5;
+    return { tone: window.__gymTapes.bpmFrom(make(t => 0.5 * Math.sin(2 * Math.PI * 330 * t))), hiss: window.__gymTapes.bpmFrom(make(() => 0.3 * rnd())), two: window.__gymTapes.bpmFrom(make(t => 0.5 * Math.sin(2 * Math.PI * (t < 6 ? 330 : 660) * t))) };
+  });
+  ok('no beat, no number: a steady tone, hiss, or two tones get no BPM', noBeat.tone === null && noBeat.hiss === null && noBeat.two === null, noBeat);
   ok('and where the beats fall is saved too', a && typeof a.beat === 'number' && a.beat >= 0 && a.beat < 60 / 140 + 0.02, a);
   await page.click('#tabLibrary'); await sleep(300);
   ok('rows show the BPM', /0:14 · 14\d BPM/.test(await G(() => document.querySelector('#trackList .row[data-key="' + window.__gymTapes.S.tracks.find(y => y.title === 'click-140').id + '"] .meta').textContent)));
@@ -76,7 +82,7 @@ const ff = (expr, d, name) => { const f = OUT + name; execFileSync('ffmpeg', ['-
   await page.click('[data-act="snd-pick"][data-k="slowed"]'); await sleep(1500);
   let f = await fx();
   ok('Slowed + reverb: 0.85 speed with the pitch going down too, and the hall reverb on the processing', f.a1 && f.speed === 0.85 && Math.abs(f.rate - 0.85) < 0.01 && f.pitch === false && f.verb === 'hall' && f.wet > 0.35 && f.playing, f);
-  ok('the Sound button says Slowed + reverb', /Slowed \+ reverb/.test(await G(() => document.querySelector('#fGym [data-act="sound"]').textContent)));
+  ok('the Sound button says Slowed (its short name), and Sound: Slowed + reverb to screen readers', /^Slowed$/.test(await G(() => document.querySelector('#fGym [data-act="sound"]').textContent)) && /Slowed \+ reverb/.test(await G(() => document.querySelector('#fGym [data-act="sound"]').getAttribute('aria-label'))));
   await page.click('[data-act="snd-pick"][data-k="bass"]'); await sleep(1200); f = await fx();
   ok('Bass boost: normal speed, the low end up 8 dB, no reverb', f.speed === 1 && f.low === 8 && f.verb === 'off' && f.wet < 0.05, f);
   await page.click('[data-act="snd-pick"][data-k="d8"]'); await sleep(1500); f = await fx();
@@ -113,6 +119,11 @@ const ff = (expr, d, name) => { const f = OUT + name; execFileSync('ffmpeg', ['-
   await page.mouse.move(box.hx, box.hy); await page.mouse.down(); await page.mouse.move(box.x + box.w * target / dur, box.hy, { steps: 6 }); await page.mouse.up(); await sleep(300);
   const ea = await G(() => window.__gymTapes.ED.a), L = 60 / a.bpm, k = Math.round((ea - a.beat) / L);
   ok('dragging a section edge near a beat puts it right on the beat', ea > 1 && Math.abs(ea - (a.beat + k * L)) < 0.02, { ea, beat: a.beat, L });
+  await page.focus('#hdA'); await page.keyboard.press('ArrowRight'); await page.keyboard.press('ArrowRight'); await sleep(100);
+  const ea2 = await G(() => window.__gymTapes.ED.a);
+  await page.click('[data-act="nudge"][data-w="a"][data-d="-0.1"]').catch(() => {}); await sleep(100);
+  const ea3 = await G(() => window.__gymTapes.ED.a);
+  ok('the arrow keys and the - button still move exactly 0.1 s (no snapping)', Math.abs(ea2 - ea - 0.2) < 0.011 && Math.abs(ea3 - ea - 0.1) < 0.011, { ea, ea2, ea3 });
   await page.screenshot({ path: DIR + '/shots/v17-phone-editor.png' });
   await page.click('[data-act="ed-close"]'); await sleep(400);
 

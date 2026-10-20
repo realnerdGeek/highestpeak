@@ -41,7 +41,7 @@ async function device(browser, name, o) {
   await P.page.click('#tabLibrary'); await sleep(200); await P.page.click('.list .row-hit >> nth=0'); await P.until(() => !window.__gymTapes.audio.paused);
   await P.page.click('#player .now-open'); await sleep(900);
   const row = await P.G(() => [...document.querySelectorAll('#fGym button')].map(b => b.textContent || b.getAttribute('aria-label')));
-  ok('the big player has a gym row: Hype, Rest 1:00, intervals 40/20 × 8, and the options', row.join('|') === 'Hype|Rest 1:00|40/20 × 8|Gym options', row);
+  ok('the big player has a gym row: Hype, Rest 1:00, intervals 40/20 × 8, Sound (V17) and the options', row.join('|') === 'Hype|Rest 1:00|40/20 × 8|Sound|Gym options', row);
   await P.shot('v16-phone-gym-row');
 
   /* ===== Hype ===== */
