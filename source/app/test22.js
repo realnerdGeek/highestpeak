@@ -11,7 +11,7 @@ const server = http.createServer((req, res) => { res.writeHead(200, { 'content-t
 const allErrors = [];
 async function device(browser, name, o) {
   const ctx = await browser.newContext(Object.assign({ colorScheme: 'dark', acceptDownloads: true }, o.pc ? { viewport: { width: 1440, height: 900 } } : { viewport: { width: 440, height: 956 }, deviceScaleFactor: 2, hasTouch: true }));
-  await ctx.addInitScript(() => { window.HP_STANDALONE = true; window.__HP_QUIET = true; window.__HP_RT_OFF = true;
+  await ctx.addInitScript(() => { window.HP_STANDALONE = true; window.__HP_QUIET = true; window.__HP_RT_OFF = true; window.__HP_KEEP_SILENCE = true;
     // count the beeps the app schedules
     window.__beeps = 0; const C = window.AudioContext; if (C) { const make = C.prototype.createOscillator; C.prototype.createOscillator = function () { window.__beeps++; return make.call(this); }; }
     try { localStorage.setItem('hp.syncAsked', '1'); localStorage.setItem('hp.guided', '1'); localStorage.setItem('hp.seenVersion', 'V16'); } catch (e) { /* blank page */ } });
@@ -41,7 +41,7 @@ async function device(browser, name, o) {
   await P.page.click('#tabLibrary'); await sleep(200); await P.page.click('.list .row-hit >> nth=0'); await P.until(() => !window.__gymTapes.audio.paused);
   await P.page.click('#player .now-open'); await sleep(900);
   const row = await P.G(() => [...document.querySelectorAll('#fGym button')].map(b => b.textContent || b.getAttribute('aria-label')));
-  ok('the big player has a gym row: Hype, Rest 1:00, intervals 40/20 × 8, and the options', row.join('|') === 'Hype|Rest 1:00|40/20 × 8|Gym options', row);
+  ok('the big player has a gym row: Hype, Rest 1:00, intervals 40/20 × 8, Sound (V17) and the options', row.join('|') === 'Hype|Rest 1:00|40/20 × 8|Sound|Gym options', row);
   await P.shot('v16-phone-gym-row');
 
   /* ===== Hype ===== */

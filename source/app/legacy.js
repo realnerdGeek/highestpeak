@@ -3,7 +3,7 @@
 // player keeps the V13 default size (V14 starts everyone on the mini player once), and there is no V14 first-open
 // guide or Name it box in the way (__HP_QUIET).
 const pw = require('./pw.js');
-const init = () => { window.__HP_SETTINGS_ALL = true; window.__HP_QUIET = true; window.__HP_RT_OFF = true;   /* V15: no live channel in older tests */ try { localStorage.setItem('hp.syncAsked', '1'); localStorage.setItem('hp.v14', '1'); } catch (e) { /* about:blank */ } };
+const init = () => { window.__HP_SETTINGS_ALL = true; window.__HP_QUIET = true; window.__HP_RT_OFF = true; window.__HP_KEEP_SILENCE = true;   /* V15: no live channel in older tests */ try { localStorage.setItem('hp.syncAsked', '1'); localStorage.setItem('hp.v14', '1'); } catch (e) { /* about:blank */ } };
 const launch = pw.chromium.launch.bind(pw.chromium);
 pw.chromium.launch = async (...a) => {
   const b = await launch(...a), nc = b.newContext.bind(b), np = b.newPage.bind(b);

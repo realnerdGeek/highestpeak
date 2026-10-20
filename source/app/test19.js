@@ -17,7 +17,7 @@ const LIME = 'rgb(200, 241, 53)';
 async function device(browser, name, o) {
   o = o || {};
   const ctx = await browser.newContext(Object.assign({ colorScheme: 'dark' }, o.pc ? { viewport: { width: 1440, height: 900 } } : { viewport: { width: 390, height: 844 }, deviceScaleFactor: 2, hasTouch: true }));
-  await ctx.addInitScript(q => { window.HP_STANDALONE = true; if (q.quiet) window.__HP_QUIET = true; window.__HP_RT_OFF = true; if (q.report) window.__HP_REPORT_TEST = true; try { localStorage.setItem('hp.syncAsked', '1'); } catch (e) { /* blank page */ } }, { quiet: o.quiet !== false, report: !!o.report });
+  await ctx.addInitScript(q => { window.HP_STANDALONE = true; if (q.quiet) window.__HP_QUIET = true; window.__HP_RT_OFF = true; window.__HP_KEEP_SILENCE = true; if (q.report) window.__HP_REPORT_TEST = true; try { localStorage.setItem('hp.syncAsked', '1'); } catch (e) { /* blank page */ } }, { quiet: o.quiet !== false, report: !!o.report });
   await ctx.route('https://o4512286113660928.ingest.us.sentry.io/**', route => { sentryHits.push({ url: route.request().url(), body: route.request().postData() }); route.fulfill({ status: 200, body: '{}' }); });
   await ctx.route(SB, route => mock.handle(route));
   const page = await ctx.newPage();

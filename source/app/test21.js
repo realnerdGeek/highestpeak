@@ -18,7 +18,7 @@ function account(email, name) {
 async function device(browser, name, o) {
   const ctx = await browser.newContext(Object.assign({ colorScheme: 'dark' }, o.pc ? { viewport: { width: 1440, height: 900 } } : { viewport: { width: 440, height: 956 }, deviceScaleFactor: 2, hasTouch: true }));
   const s = mock.sessionFor(o.email), sess = { at: s.access_token, rt: s.refresh_token, exp: s.expires_at * 1000, uid: s.user.id, email: s.user.email };
-  await ctx.addInitScript(q => { window.HP_STANDALONE = true; window.__HP_QUIET = true;
+  await ctx.addInitScript(q => { window.HP_STANDALONE = true; window.__HP_QUIET = true; window.__HP_KEEP_SILENCE = true;
     try { if (!sessionStorage.getItem('t21')) { sessionStorage.setItem('t21', '1'); localStorage.setItem('hp.auth', JSON.stringify(q.sess)); localStorage.setItem('hp.devName', q.dev); }
       localStorage.setItem('hp.syncAsked', '1'); localStorage.setItem('hp.guided', '1'); localStorage.setItem('hp.seenVersion', 'V15'); } catch (e) { /* blank page */ } }, { sess, dev: o.dev });
   await ctx.route(SB, route => mock.handle(route));

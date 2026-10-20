@@ -2,7 +2,7 @@ import sys, os, subprocess, importlib
 here = os.path.dirname(os.path.abspath(__file__)); app = os.path.dirname(here); sys.path.insert(0, here)
 from lib import Doc
 d = Doc(open(os.path.join(app, 'v7-backup.html'), encoding='utf8').read())
-for name in sys.argv[1:] or ['p5_home', 'p6_play', 'p7_swipe', 'p8_join', 'p9_ivol', 'p10_local', 'p11_video', 'p12_movfix', 'p13_sync', 'p14_v12', 'p15_v13', 'p16_v14', 'p17_v15', 'p18_v16']:
+for name in sys.argv[1:] or ['p5_home', 'p6_play', 'p7_swipe', 'p8_join', 'p9_ivol', 'p10_local', 'p11_video', 'p12_movfix', 'p13_sync', 'p14_v12', 'p15_v13', 'p16_v14', 'p17_v15', 'p18_v16', 'p19_v17']:
     importlib.import_module(name).apply(d); print('applied', name)
 s = d.s
 js = s[s.index('<script>') + 8 : s.rindex('</script>')]
