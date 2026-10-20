@@ -49,7 +49,7 @@ async function device(browser, name, o) {
   await C.until(() => window.__gymTapes.S.tracks.length === 3 && document.getElementById('upDot').hidden, null, 60000);
   await C.until(() => !window.__gymTapes.SYNC.busy && window.__gymTapes.SYNC.okAt > 0, null, 20000);
   await C.G(() => window.__gymTapes.syncNow()); await C.until(() => !window.__gymTapes.SYNC.busy, null, 20000); await sleep(500);
-  ok('V15', (await C.G(() => window.__gymTapes.VERSION)) === 'V15');
+  ok('V15 or later', +String(await C.G(() => window.__gymTapes.VERSION)).replace(/^V/, '') >= 15);
   const P = await device(browser, 'phone', { email: EMAIL, dev: 'iPhone' });
   ok('the phone gets the three uploads from the account', await P.until(() => window.__gymTapes.S.tracks.length === 3, null, 30000));
   const both = await P.until(() => window.__gymTapes.RT.joined && window.__gymTapes.RT.devices.size === 1, null, 10000) && await C.until(() => window.__gymTapes.RT.devices.size === 1, null, 5000);
