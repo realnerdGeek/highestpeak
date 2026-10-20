@@ -126,7 +126,7 @@ async function makeAccount(D, email) {
   ok('Account has a Two-step sign-in switch, off', (await P.page.getAttribute('#mfaSwitch', 'aria-checked')) === 'false' && !(await P.page.isDisabled('#mfaSwitch')));
   await P.page.click('#mfaSwitch'); await P.page.waitForSelector('#mfaKey', { timeout: 15000 }).catch(() => {}); await sleep(400);
   const setup = await P.G(() => { const i = document.getElementById('mfaQr'), a = document.getElementById('mfaOpen'); return { qr: !!(i && i.complete && i.naturalWidth > 0), key: document.getElementById('mfaKey').textContent, href: a ? a.getAttribute('href') : '' }; });
-  ok('setting it up shows a code to scan, the setup key, and Open in authenticator', setup.qr && setup.key.replace(/\s/g, '').length >= 16 && /^otpauth:\/\/totp\//.test(setup.href) && /issuer=Ear%20Worm/.test(setup.href), setup);
+  ok('setting it up shows a code to scan, the setup key, and Open in authenticator (named EarWorm since V14)', setup.qr && setup.key.replace(/\s/g, '').length >= 16 && /^otpauth:\/\/totp\//.test(setup.href) && /issuer=EarWorm/.test(setup.href), setup);
   await P.shot('v12-2fa-setup');
   await P.page.fill('#mfaCode', '000000'); await P.page.click('#authGo'); await P.msg('That code did not work');
   ok('a wrong code does not turn it on', !(mock.users.get(EMAIL).factors || []).some(f => f.status === 'verified'));
@@ -216,7 +216,7 @@ async function makeAccount(D, email) {
   ok('the page uses the whole width, with no empty bars at the sides', app.x >= nav.w - 1 && app.x + app.w >= L.vw - 1 && view.w > L.vw - nav.w - 120 && L.scroll <= L.vw, { app, view });
   ok('text and buttons are bigger', L.title === '40px' && L.body === '17px', L);
   await C.page.click('.list .row-hit'); await C.page.waitForFunction(() => !window.__gymTapes.audio.paused, null, { timeout: 15000 }).catch(() => {});
-  const bar = await box('.player-in'); nav = await box('#nav');
+  await sleep(500); const bar = await box('.player-in'); nav = await box('#nav'); // after its slide-in
   ok('the player is a Now playing panel down the right side (V14; it was a bar along the bottom), and the sidebar runs the full height', bar.x + bar.w >= L.vw - 1 && bar.w > 280 && bar.w < 400 && bar.y <= 1 && bar.h >= L.vh - 2 && nav.h >= L.vh - 2, { bar, nav });
   const parts = await C.G(() => { const r = s => document.querySelector('#player ' + s).getBoundingClientRect(); return { now: r('.now').y, wave: r('.wave').y, ctl: r('.ctl').y, ww: r('.wave').width }; });
   ok('in the panel: the cover and name on top, then the waveform, then the controls (V14)', parts.now < parts.wave && parts.wave < parts.ctl && parts.ww > 250, parts);
@@ -245,7 +245,7 @@ async function makeAccount(D, email) {
   await C.page.keyboard.press('Escape'); await sleep(300);
   await C.page.setViewportSize({ width: 390, height: 844 }); await sleep(500);
   const narrow = await box('#nav');
-  ok('made narrow, it goes back to the phone layout (the open section becomes a page with a back arrow)', !(await C.G(() => window.__gymTapes.isPC())) && narrow.y > 700 && narrow.w === 390 && await C.page.isVisible('#setBack') && (await C.page.textContent('.page-t')) === 'Account', narrow);
+  ok('made narrow, it goes back to the phone layout (the open section becomes a page with a back arrow; the tab bar floats since V14)', !(await C.G(() => window.__gymTapes.isPC())) && narrow.y > 700 && narrow.w >= 360 && narrow.w <= 390 && await C.page.isVisible('#setBack') && (await C.page.textContent('.page-t')) === 'Account', narrow);
 
   ok('no page errors', allErrors.length === 0, allErrors);
   console.log(`\n${pass} passed, ${fail} failed`);

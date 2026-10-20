@@ -199,6 +199,7 @@ async function device(browser, name, o) {
   /* Name it */
   await F.page.setInputFiles('#fileInput', [DIR + '/media/two-tones.mp3']);
   await F.page.waitForSelector('#nameSave', { timeout: 60000 }).catch(() => {});
+  await F.page.waitForFunction(() => document.activeElement && document.activeElement.id === 'renameInput', null, { timeout: 3000 }).catch(() => {});
   const ni = await F.G(() => ({ open: !document.getElementById('sheet').hidden, head: (document.querySelector('.nameit-t') || {}).textContent, val: (document.getElementById('renameInput') || {}).value, focus: document.activeElement && document.activeElement.id }));
   ok('one upload: the Name it box pops up, ready to type', ni.open && ni.head === 'Upload added' && ni.focus === 'renameInput', ni);
   await F.shot('v14-name-it');
@@ -247,6 +248,7 @@ async function device(browser, name, o) {
   const ev = lines[2] || {};
   ok('a crash report goes to the EarWorm project in Sentry', !!hit && /\/api\/4512286125588480\/envelope\//.test(hit.url) && /sentry_key=cc25cb6e30f18962f6c732604894a377/.test(hit.url) && lines[1] && lines[1].type === 'event', hit && hit.url);
   ok('it says what broke and which version, and nothing about the person', ev.exception && ev.exception.values[0].value === 'V14 test crash' && ev.release === 'earworm@V14' && ev.tags && ev.tags.device === 'phone' && !ev.user && !JSON.stringify(ev).match(/ip_address|email/), { release: ev.release, tags: ev.tags, user: ev.user });
+  ok('and it tells Sentry not to keep the IP address', !!(ev.sdk && ev.sdk.settings && ev.sdk.settings.infer_ip === 'never'), ev.sdk);
   ok('with a stack trace Sentry can read', ev.exception && ev.exception.values[0].stacktrace.frames.length > 0 && ev.exception.values[0].stacktrace.frames.every(f => f.lineno > 0));
   await P.page.click('#tabSettings'); await sleep(300);
   const ab = await P.G(() => ({ sw: (document.getElementById('sw-improve') || {}).getAttribute && document.getElementById('sw-improve').getAttribute('aria-checked'), v: (document.getElementById('aboutVersion') || {}).textContent, sub: (document.querySelector('.about .sub') || {}).textContent }));

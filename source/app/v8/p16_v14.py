@@ -114,7 +114,8 @@ body.no-glass .f-top .icon-btn,body.no-glass .f-watch,body.no-glass .full .chips
   .rot .cover{width:64px;height:64px}
   .tile{width:180px}
   .tile .cover{width:180px;height:180px;border-radius:16px}
-  .player{left:auto;top:0;right:0;bottom:0;width:var(--np-w,340px)}
+  .player{left:auto;top:0;right:0;bottom:0;width:var(--np-w,340px);animation-name:npIn}
+  @keyframes npIn{from{opacity:0;transform:translateX(24px)}}
   .player-in{height:100%;box-sizing:border-box;display:flex;flex-direction:column;align-items:stretch;gap:12px;padding:22px 20px 24px;border-radius:0;border:0;border-left:1px solid var(--line);
     background:var(--sheet);box-shadow:none;-webkit-backdrop-filter:none;backdrop-filter:none;overflow-y:auto}
   .np-head{display:flex;align-items:center;justify-content:space-between}
@@ -552,7 +553,7 @@ TOOLS_JS = r"""/* ----- V14: tester tools: crash reports, an anonymous weekly co
 const VERSION = 'V14';
 const WHATS_NEW = [
   ['A new look', 'Frosted glass on the controls, EarWorm lime, bigger covers, and a Now playing panel on computers.'],
-  ['Gestures', 'Swipe the mini player to skip, drag the big player down to close it, double-tap a cover to like it.'],
+  ['Gestures', 'Swipe the mini player to skip, drag the big player down to close it, double-tap its cover to like.'],
   ['Gym mode', 'Tap the cover in the big player and everything hides except the cover and a thin progress line.'],
   ['Name it', 'Right after an upload, give it a real name instead of Upload 85.'],
   ['A safer library', 'See whether this device protects your library, and get a nudge when a backup is due.'],
@@ -604,7 +605,7 @@ function report(e, how) {
     const ev = { event_id: id, timestamp: Date.now() / 1000, platform: 'javascript', level: 'error', release: 'earworm@' + VERSION, environment: realHost() ? 'production' : 'test',
       tags: { device: devKind(), home_screen_app: String(standalone), where: S.full ? 'big player' : S.tab },
       exception: { values: [{ type, value, stacktrace: { frames: stackFrames(e && e.stack) }, mechanism: { type: how || 'onerror', handled: false } }] },
-      request: { url: cleanUrl(location.href) } };
+      request: { url: cleanUrl(location.href) }, sdk: { name: 'earworm.reporter', version: '14', settings: { infer_ip: 'never' } } };
     const body = JSON.stringify({ event_id: id, sent_at: new Date().toISOString(), dsn: SENTRY.dsn }) + '\n' + JSON.stringify({ type: 'event' }) + '\n' + JSON.stringify(ev) + '\n';
     fetch('https://' + m[2] + '/api/' + m[3] + '/envelope/?sentry_version=7&sentry_key=' + m[1] + '&sentry_client=earworm%2F14', { method: 'POST', body, keepalive: true, headers: { 'Content-Type': 'text/plain;charset=UTF-8' } }).catch(() => {});
   } catch (x) { /* reporting never breaks the app */ }
