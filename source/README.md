@@ -12,7 +12,7 @@ source/
     v8/lib.py           patch helpers (rep asserts the exact match count, cut, before, after)
     v8/p5_home.py ... p20_v18.py   one patch file per version (p10 = home screen app storage, p11 = V10, p12 = V10.1, p13 = V11, p14 = V12, p15 = V13, p16 = V14 to V14.2, p17 = V15, p18 = V16, p19 = V17, p20 = V18)
     test1.js ... test24.js         one test file per version (test16 = V11 sync, test17 = V12, test18 = V13, test19 = V14, test20 = V14.2, test21 = V15 Play anywhere, test22 = V16 gym and share card, test23 = V17 sound, BPM and silence trim, test24 = V18 tags, smart playlists, folders, source link, folder drop, Open with, Android share)
-    legacy.js           loaded by tests 1 to 16: shows every Settings section on one page, marks the sync invite as seen, and sets __HP_QUIET (no first-open guide, Name it sheet or What's new popping up mid-test) __HP_RT_OFF (no live channel) and __HP_KEEP_SILENCE (V17's silence trim leaves their files exactly as they were)
+    legacy.js           loaded by tests 1 to 16: shows every Settings section on one page, marks the sync invite as seen, and sets __HP_QUIET (no first-open guide, Name it sheet or What's new popping up mid-test) __HP_RT_OFF (no live channel), __HP_KEEP_SILENCE (V17's silence trim leaves their files exactly as they were) and __HP_NO_BPM (no background BPM pass)
     mocksb.js           a stand-in for Supabase (accounts, docs table rules, files, usernames, two-step sign-in, delete account, V14 pings and feedback, the V15 channel rule)
     mockrt.js           a stand-in for Supabase Realtime (private channels, presence, broadcast) through Playwright's WebSocket routing, for test21
     pw.js               finds Playwright (PW_PATH, the Claude workspace copy, or npm)

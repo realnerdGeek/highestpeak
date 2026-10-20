@@ -379,6 +379,10 @@ def apply(d):
     # rows lift a little while dragged (and a tiny buzz on Android)
     d.rep("    d.row.style.transform = 'translateY(' + off + 'px)';", "    d.row.style.transform = 'translateY(' + off + 'px) scale(1.02)';")
     d.rep("    row.classList.add('drag'); list.classList.add('sorting');", "    row.classList.add('drag'); list.classList.add('sorting'); row.style.transform = 'scale(1.02)'; try { if (navigator.vibrate) navigator.vibrate(8); } catch (x) { /* fine */ }")
+    # the background BPM pass waits while uploads are coming in or Check every upload is running (it's heavy on a phone),
+    # and older tests turn it off so it never touches their files
+    d.rep("  if (BPMQ.busy || !S.ready || !store || !store.canWrite || document.visibilityState !== 'visible') return;",
+          "  if (BPMQ.busy || !S.ready || !store || !store.canWrite || document.visibilityState !== 'visible' || importing || trimAllBusy || window.__HP_NO_BPM) return;")
     d.rep("const VERSION = 'V17', NEWS = 'V17';", "const VERSION = 'V18', NEWS = 'V18';")
     i = d.s.index('const WHATS_NEW = [\n'); j = d.s.index('\n];', i) + 3
     d.s = d.s[:i] + WHATS_NEW + d.s[j:]
