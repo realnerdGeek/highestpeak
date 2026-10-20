@@ -13,7 +13,7 @@
 <meta name="theme-color" content="#F5F5F7" media="(prefers-color-scheme: light)">
 <meta name="theme-color" content="#0A0A0D" media="(prefers-color-scheme: dark)">
 <meta name="color-scheme" content="light dark">
-<meta name="hp-build" content="20261020001027-93206ba8">
+<meta name="hp-build" content="20261020002319-2d5063a2">
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="apple-touch-icon" href="apple-touch-icon.png">
 <link rel="icon" type="image/png" href="icon-192.png">
@@ -792,7 +792,7 @@ body.no-glass .f-top .icon-btn,body.no-glass .f-watch,body.no-glass .full .chips
   .toast{left:calc(var(--side-w) + (100vw - var(--side-w) - var(--np-w,0px)) / 2)}
   /* the full-screen player: blurred cover colors behind, Up next in a glass panel */
   .full{background:radial-gradient(60% 70% at 25% 35%,hsl(var(--hue,235) var(--ft-s) calc(var(--ft-l) + 10%) / .55),transparent 70%),radial-gradient(50% 60% at 80% 75%,hsl(var(--hue,235) var(--ft-s) var(--ft-l) / .6),transparent 70%),var(--bg)}
-  .f-cover{width:min(100%,520px,58vh)}
+  .f-cover{width:min(100%,clamp(200px,calc(100vh - 480px),520px))}
   .f-cover .cover{border-radius:26px}
   .f-title{font-size:40px}
   .full .f-side{overflow-x:hidden;padding:14px 16px;border-radius:20px;background:var(--g-over);-webkit-backdrop-filter:blur(24px) saturate(180%);backdrop-filter:blur(24px) saturate(180%);border:1px solid var(--g-line);box-shadow:inset 0 1px 0 var(--g-hi)}
@@ -3796,9 +3796,10 @@ function nameItSheet(id, cut) {
     '<p class="sub">Skip and it stays ' + esc(t.title) + '. You can rename it any time.</p>' +
     '<div class="pair"><button type="button" class="btn" id="nameSkip" data-act="sheet-close">Skip</button><button type="submit" class="btn primary" id="nameSave">Save</button></div></form>', { id, kind: 'nameit' });
 }
+function namesNext(added, newId) { return added === 1 && !!newId && S.opt.nameIt && !window.__HP_QUIET && !V14.sample && !sheetOpen() && !GUIDE.open; }
 function afterImports(added, newId, cut) {
   if (V14.sample) { V14.sample = false; if (added === 1 && newId) { go('home'); ACT.play({ id: newId, ctx: 'all' }); } return; }
-  if (added === 1 && newId && S.opt.nameIt && !window.__HP_QUIET) setTimeout(() => nameItSheet(newId, cut), 260);
+  if (namesNext(added, newId)) setTimeout(() => nameItSheet(newId, cut), 260);
 }
 /* ----- V14: not losing uploads ----- */
 function trashCloudBytes() {
@@ -3830,7 +3831,7 @@ function backupNudge() {
 }
 
 /* ----- V14: tester tools: crash reports, an anonymous weekly count, feedback, what's new ----- */
-const VERSION = 'V14';
+const VERSION = 'V14.1', NEWS = 'V14';   // NEWS: the update the What's new popup is about (a bug fix doesn't show it again)
 const WHATS_NEW = [
   ['A new look', 'Frosted glass on the controls, EarWorm lime, bigger covers, and a Now playing panel on computers.'],
   ['Gestures', 'Swipe the mini player to skip, drag the big player down to close it, double-tap its cover to like.'],
@@ -3894,7 +3895,7 @@ window.addEventListener('error', e => { if (e && e.error) report(e.error, 'onerr
 window.addEventListener('unhandledrejection', e => { const r = e && e.reason; if (r instanceof Error) report(r, 'unhandledrejection'); });
 function aboutBlock() {
   return '<section class="group about"><div class="card"><div class="set"><div class="grow"><div class="set-t">Help improve EarWorm</div><p class="sub">Sends crash reports and an anonymous weekly count. No names, no emails, nothing you uploaded.</p></div>' +
-    swBtn('improve', 'Help improve EarWorm') + '</div></div><div class="about-b"><button class="btn sm" id="feedbackBtn" data-act="feedback">Send feedback</button><button class="btn sm" id="newsBtn" data-act="whats-new">What\'s new · ' + VERSION + '</button></div>' +
+    swBtn('improve', 'Help improve EarWorm') + '</div></div><div class="about-b"><button class="btn sm" id="feedbackBtn" data-act="feedback">Send feedback</button><button class="btn sm" id="newsBtn" data-act="whats-new">What\'s new · ' + NEWS + '</button></div>' +
     '<p class="about-v" id="aboutVersion">EarWorm ' + VERSION + '</p></section>';
 }
 function feedbackSheet() {
@@ -3912,14 +3913,14 @@ async function sendFeedback(f) {
   catch (e) { if (b) b.disabled = false; say(e && e.code === 'offline' ? 'Could not send. Check your connection and try again.' : 'Could not send it right now. Try again in a bit.'); }
 }
 function whatsNewSheet() {
-  lsSet('hp.seenVersion', VERSION);
-  sheet('<h2>What\'s new in ' + VERSION + '</h2><ul class="news">' + WHATS_NEW.map(x => '<li><b>' + x[0] + '</b><span>' + x[1] + '</span></li>').join('') + '</ul><button class="btn primary" id="newsOk" data-act="sheet-close">Nice</button>', { kind: 'news' });
+  lsSet('hp.seenVersion', NEWS);
+  sheet('<h2>What\'s new in ' + NEWS + '</h2><ul class="news">' + WHATS_NEW.map(x => '<li><b>' + x[0] + '</b><span>' + x[1] + '</span></li>').join('') + '</ul><button class="btn primary" id="newsOk" data-act="sheet-close">Nice</button>', { kind: 'news' });
 }
 function maybeNews() {
   if (window.__HP_QUIET || GUIDE.open || !S.ready || sheetOpen() || S.full) return;
   let seen = ''; try { seen = localStorage.getItem('hp.seenVersion') || ''; } catch (e) { return; }
-  if (seen === VERSION) return;
-  if (!S.tracks.length && !lsNum('hp.since')) { lsSet('hp.seenVersion', VERSION); return; }        // brand new here: the guide does the talking
+  if (seen === NEWS) return;
+  if (!S.tracks.length && !lsNum('hp.since')) { lsSet('hp.seenVersion', NEWS); return; }        // brand new here: the guide does the talking
   whatsNewSheet();
 }
 
@@ -4370,7 +4371,7 @@ async function runImports() {
   refreshUsage();
   const note = trimmedCount ? (trimmedCount === 1 ? ' End clip removed.' : ' End clips removed from ' + trimmedCount + '.') : '';
   const vnote = VID.missed ? ' ' + (VID.missed === 1 ? (added === 1 ? 'Its video' : '1 video') : VID.missed + ' videos') + ' could not be kept' + (VID.full ? ', storage is full.' : '.') : '';
-  if (added) { toast((added === 1 ? 'Upload added.' : added + ' uploads added.') + note + vnote); afterImports(added, lastNew, trimmedCount > 0); }
+  if (added) { if (vnote || !namesNext(added, lastNew)) toast((added === 1 ? 'Upload added.' : added + ' uploads added.') + note + vnote); afterImports(added, lastNew, trimmedCount > 0); }
   else if (asked && S.tab !== 'upload') toast(asked === 1 ? 'One file looks like an upload you already have. Open Upload to decide.' : asked + ' files look like uploads you already have. Open Upload to decide.');
 }
 function queueFiles(files) {
@@ -5243,6 +5244,7 @@ function onData(d) {
   S.playlists = d.playlists.slice().sort((a, b) => (a.created || 0) - (b.created || 0));
   const first = !S.ready; S.ready = true;
   checkPersist(); if (S.tracks.length && !lsNum('hp.since')) lsSet('hp.since', Date.now());
+  if (!S.tracks.length && !lsNum('hp.since')) lsSet('hp.seenVersion', NEWS);   // brand new here: nothing is new to them
   if (first) setTimeout(() => { maybeNews(); weeklyPing(); }, 1500);
   const sets = d.settings || [], ui = sets.find(x => x.id === 'ui') || null, sig = JSON.stringify(ui && ui.bg || { kind: 'default' });
   if (sig !== S.bgSig) { S.bgSig = sig; S.ui = ui; applyBg(); }

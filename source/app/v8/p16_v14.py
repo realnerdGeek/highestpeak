@@ -144,7 +144,7 @@ body.no-glass .f-top .icon-btn,body.no-glass .f-watch,body.no-glass .full .chips
   .toast{left:calc(var(--side-w) + (100vw - var(--side-w) - var(--np-w,0px)) / 2)}
   /* the full-screen player: blurred cover colors behind, Up next in a glass panel */
   .full{background:radial-gradient(60% 70% at 25% 35%,hsl(var(--hue,235) var(--ft-s) calc(var(--ft-l) + 10%) / .55),transparent 70%),radial-gradient(50% 60% at 80% 75%,hsl(var(--hue,235) var(--ft-s) var(--ft-l) / .6),transparent 70%),var(--bg)}
-  .f-cover{width:min(100%,520px,58vh)}
+  .f-cover{width:min(100%,clamp(200px,calc(100vh - 480px),520px))}
   .f-cover .cover{border-radius:26px}
   .f-title{font-size:40px}
   .full .f-side{overflow-x:hidden;padding:14px 16px;border-radius:20px;background:var(--g-over);-webkit-backdrop-filter:blur(24px) saturate(180%);backdrop-filter:blur(24px) saturate(180%);border:1px solid var(--g-line);box-shadow:inset 0 1px 0 var(--g-hi)}
@@ -443,9 +443,10 @@ function nameItSheet(id, cut) {
     '<p class="sub">Skip and it stays ' + esc(t.title) + '. You can rename it any time.</p>' +
     '<div class="pair"><button type="button" class="btn" id="nameSkip" data-act="sheet-close">Skip</button><button type="submit" class="btn primary" id="nameSave">Save</button></div></form>', { id, kind: 'nameit' });
 }
+function namesNext(added, newId) { return added === 1 && !!newId && S.opt.nameIt && !window.__HP_QUIET && !V14.sample && !sheetOpen() && !GUIDE.open; }
 function afterImports(added, newId, cut) {
   if (V14.sample) { V14.sample = false; if (added === 1 && newId) { go('home'); ACT.play({ id: newId, ctx: 'all' }); } return; }
-  if (added === 1 && newId && S.opt.nameIt && !window.__HP_QUIET) setTimeout(() => nameItSheet(newId, cut), 260);
+  if (namesNext(added, newId)) setTimeout(() => nameItSheet(newId, cut), 260);
 }
 /* ----- V14: not losing uploads ----- */
 function trashCloudBytes() {
@@ -509,7 +510,7 @@ def apply_b(d):
     d.rep("  let added = 0, trimmedCount = 0, asked = 0; VID.missed = 0; VID.full = false;", "  let added = 0, trimmedCount = 0, asked = 0, lastNew = null; VID.missed = 0; VID.full = false;")
     d.rep("else { added++; if (r === 'trimmed') trimmedCount++; } }", "else { added++; lastNew = job.newId || null; if (r === 'trimmed') trimmedCount++; } }")
     d.rep("  if (added) toast((added === 1 ? 'Upload added.' : added + ' uploads added.') + note + vnote);",
-          "  if (added) { toast((added === 1 ? 'Upload added.' : added + ' uploads added.') + note + vnote); afterImports(added, lastNew, trimmedCount > 0); }")
+          "  if (added) { if (vnote || !namesNext(added, lastNew)) toast((added === 1 ? 'Upload added.' : added + ' uploads added.') + note + vnote); afterImports(added, lastNew, trimmedCount > 0); }")
     # the guide comes after the sync invite, on an empty library
     d.rep("function render() {\n", "function render() {\n  if (!GUIDE.open && !S.tracks.length) setTimeout(maybeGuide, 0);\n")
     d.rep("function closeSheet() {\n", "function closeSheet() {\n  setTimeout(maybeGuide, 400);\n")
@@ -550,7 +551,7 @@ CSS_C = r"""
 """
 
 TOOLS_JS = r"""/* ----- V14: tester tools: crash reports, an anonymous weekly count, feedback, what's new ----- */
-const VERSION = 'V14';
+const VERSION = 'V14.1', NEWS = 'V14';   // NEWS: the update the What's new popup is about (a bug fix doesn't show it again)
 const WHATS_NEW = [
   ['A new look', 'Frosted glass on the controls, EarWorm lime, bigger covers, and a Now playing panel on computers.'],
   ['Gestures', 'Swipe the mini player to skip, drag the big player down to close it, double-tap its cover to like.'],
@@ -614,7 +615,7 @@ window.addEventListener('error', e => { if (e && e.error) report(e.error, 'onerr
 window.addEventListener('unhandledrejection', e => { const r = e && e.reason; if (r instanceof Error) report(r, 'unhandledrejection'); });
 function aboutBlock() {
   return '<section class="group about"><div class="card"><div class="set"><div class="grow"><div class="set-t">Help improve EarWorm</div><p class="sub">Sends crash reports and an anonymous weekly count. No names, no emails, nothing you uploaded.</p></div>' +
-    swBtn('improve', 'Help improve EarWorm') + '</div></div><div class="about-b"><button class="btn sm" id="feedbackBtn" data-act="feedback">Send feedback</button><button class="btn sm" id="newsBtn" data-act="whats-new">What\'s new · ' + VERSION + '</button></div>' +
+    swBtn('improve', 'Help improve EarWorm') + '</div></div><div class="about-b"><button class="btn sm" id="feedbackBtn" data-act="feedback">Send feedback</button><button class="btn sm" id="newsBtn" data-act="whats-new">What\'s new · ' + NEWS + '</button></div>' +
     '<p class="about-v" id="aboutVersion">EarWorm ' + VERSION + '</p></section>';
 }
 function feedbackSheet() {
@@ -632,14 +633,14 @@ async function sendFeedback(f) {
   catch (e) { if (b) b.disabled = false; say(e && e.code === 'offline' ? 'Could not send. Check your connection and try again.' : 'Could not send it right now. Try again in a bit.'); }
 }
 function whatsNewSheet() {
-  lsSet('hp.seenVersion', VERSION);
-  sheet('<h2>What\'s new in ' + VERSION + '</h2><ul class="news">' + WHATS_NEW.map(x => '<li><b>' + x[0] + '</b><span>' + x[1] + '</span></li>').join('') + '</ul><button class="btn primary" id="newsOk" data-act="sheet-close">Nice</button>', { kind: 'news' });
+  lsSet('hp.seenVersion', NEWS);
+  sheet('<h2>What\'s new in ' + NEWS + '</h2><ul class="news">' + WHATS_NEW.map(x => '<li><b>' + x[0] + '</b><span>' + x[1] + '</span></li>').join('') + '</ul><button class="btn primary" id="newsOk" data-act="sheet-close">Nice</button>', { kind: 'news' });
 }
 function maybeNews() {
   if (window.__HP_QUIET || GUIDE.open || !S.ready || sheetOpen() || S.full) return;
   let seen = ''; try { seen = localStorage.getItem('hp.seenVersion') || ''; } catch (e) { return; }
-  if (seen === VERSION) return;
-  if (!S.tracks.length && !lsNum('hp.since')) { lsSet('hp.seenVersion', VERSION); return; }        // brand new here: the guide does the talking
+  if (seen === NEWS) return;
+  if (!S.tracks.length && !lsNum('hp.since')) { lsSet('hp.seenVersion', NEWS); return; }        // brand new here: the guide does the talking
   whatsNewSheet();
 }
 
@@ -659,7 +660,7 @@ def apply_c(d):
     d.rep("IC.chev + '</button>').join('') + '</div></section>';", "IC.chev + '</button>').join('') + '</div></section>' + aboutBlock();")
     d.before("  rename(f) {", "  feedback(f) { sendFeedback(f); },\n")
     d.rep("function closeSheet() {\n  setTimeout(maybeGuide, 400);\n", "function closeSheet() {\n  setTimeout(maybeGuide, 400); setTimeout(maybeNews, 700);\n")
-    d.after("  checkPersist(); if (S.tracks.length && !lsNum('hp.since')) lsSet('hp.since', Date.now());", "\n  if (first) setTimeout(() => { maybeNews(); weeklyPing(); }, 1500);")
+    d.after("  checkPersist(); if (S.tracks.length && !lsNum('hp.since')) lsSet('hp.since', Date.now());", "\n  if (!S.tracks.length && !lsNum('hp.since')) lsSet('hp.seenVersion', NEWS);   // brand new here: nothing is new to them\n  if (first) setTimeout(() => { maybeNews(); weeklyPing(); }, 1500);")
     d.before('/* ---------- loudness, for volume leveling ---------- */', TOOLS_JS)
     d.after("const ACT = {\n", ACTS_C)
     d.rep("window.__gymTapes = { isPC: () => isPC(),", "window.__gymTapes = { isPC: () => isPC(), VERSION, isoWeek, report, deviceId,")

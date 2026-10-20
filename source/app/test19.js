@@ -150,6 +150,14 @@ async function device(browser, name, o) {
   const fs2 = await C.G(() => { const s = document.querySelector('.f-side'); return { sw: s.scrollWidth, cw: s.clientWidth, blur: getComputedStyle(s).backdropFilter }; });
   ok('the full-screen player: Up next in a glass panel with no sideways scrollbar', fs2.sw <= fs2.cw && /blur/.test(fs2.blur), fs2);
   await C.shot('v14-pc-full');
+  // V14.1: play, the volume and the chips fit on the screen, down to small laptop screens
+  const fits = [];
+  for (const [w, h] of [[1440, 900], [1366, 768], [1280, 720]]) {
+    await C.page.setViewportSize({ width: w, height: h }); await sleep(400);
+    fits.push(await C.G(h => { const b = s => document.querySelector('#full ' + s).getBoundingClientRect(); return { h, play: Math.round(b('.ctl .big').bottom), vol: Math.round(b('.vol').bottom), scroll: document.getElementById('full').scrollTop }; }, h));
+  }
+  await C.page.setViewportSize({ width: 1440, height: 900 }); await sleep(300);
+  ok('the full-screen player fits: play and the volume are on screen at 1440x900, 1366x768 and 1280x720 (V14.1)', fits.every(f => f.play <= f.h && f.vol <= f.h && f.scroll === 0), fits);
   await C.page.keyboard.press('Escape'); await sleep(400);
   const sb = await C.G(() => getComputedStyle(document.documentElement).scrollbarWidth);
   ok('scrollbars are thin on a computer', sb === 'thin', sb);
@@ -187,6 +195,7 @@ async function device(browser, name, o) {
   await F.page.waitForFunction(() => window.__gymTapes.S.tracks.length === 1 && !window.__gymTapes.audio.paused, null, { timeout: 60000 }).catch(() => {});
   await sleep(500);
   const smp = await F.G(() => { const g2 = window.__gymTapes, t = g2.S.tracks[0]; return { guide: !!document.getElementById('guide'), done: localStorage.getItem('hp.guided'), title: t && t.title, dur: t && t.dur, playing: !!t && g2.P.cur === t.id && !g2.audio.paused, tab: g2.S.tab, sheet: !document.getElementById('sheet').hidden }; });
+  await sleep(1500); ok("a brand new person who tries the sample doesn't get the What's new popup (V14.1)", !(await F.G(() => !!document.getElementById('newsOk'))));
   ok('Try the sample beat: the guide closes for good, a Sample beat upload is made and starts playing on Home', !smp.guide && smp.done === '1' && smp.title === 'Sample beat' && smp.dur > 5 && smp.playing && smp.tab === 'home' && !smp.sheet, smp);
   await F.page.reload(); await F.ready(); await sleep(700);
   ok('after that, the guide does not come back on its own', !(await F.G(() => !!document.getElementById('guide'))));
@@ -202,6 +211,7 @@ async function device(browser, name, o) {
   await F.page.waitForFunction(() => document.activeElement && document.activeElement.id === 'renameInput', null, { timeout: 3000 }).catch(() => {});
   const ni = await F.G(() => ({ open: !document.getElementById('sheet').hidden, head: (document.querySelector('.nameit-t') || {}).textContent, val: (document.getElementById('renameInput') || {}).value, focus: document.activeElement && document.activeElement.id }));
   ok('one upload: the Name it box pops up, ready to type', ni.open && ni.head === 'Upload added' && ni.focus === 'renameInput', ni);
+  ok('with no Upload added toast on top of it, the box already says it (V14.1)', !(await F.G(() => { const t = document.getElementById('toast'); return !t.hidden && /Upload added/.test(t.textContent); })));
   await F.shot('v14-name-it');
   await F.page.fill('#renameInput', 'Phonk leg day'); await F.page.click('#nameSave'); await sleep(400);
   ok('Save names it', await F.G(() => window.__gymTapes.S.tracks.some(t => t.title === 'Phonk leg day')));
@@ -240,19 +250,19 @@ async function device(browser, name, o) {
 
   /* ===== V14 chunk C: tester tools ===== */
   const pg = mock.pings.slice();
-  ok('once a week each device sends an anonymous count: a random id, the week, the version, phone or computer, nothing else', pg.length === 1 && /^[A-Za-z0-9]{8,64}$/.test(pg[0].device) && pg[0].week === await P.G(() => window.__gymTapes.isoWeek(new Date())) && pg[0].version === 'V14' && pg[0].kind === 'phone' && Object.keys(pg[0]).length === 4, pg);
+  ok('once a week each device sends an anonymous count: a random id, the week, the version, phone or computer, nothing else', pg.length === 1 && /^[A-Za-z0-9]{8,64}$/.test(pg[0].device) && pg[0].week === await P.G(() => window.__gymTapes.isoWeek(new Date())) && pg[0].version === 'V14.1' && pg[0].kind === 'phone' && Object.keys(pg[0]).length === 4, pg);
   await P.page.reload(); await P.ready(); await sleep(2200);
   ok('not twice in the same week', mock.pings.length === 1, mock.pings.length);
   await P.G(() => window.__gymTapes.report(new Error('V14 test crash'), 'test')); await sleep(400);
   const hit = sentryHits.find(h => /V14 test crash/.test(h.body || '')), lines = hit ? hit.body.trim().split('\n').map(l => JSON.parse(l)) : [];
   const ev = lines[2] || {};
   ok('a crash report goes to the EarWorm project in Sentry', !!hit && /\/api\/4512286125588480\/envelope\//.test(hit.url) && /sentry_key=cc25cb6e30f18962f6c732604894a377/.test(hit.url) && lines[1] && lines[1].type === 'event', hit && hit.url);
-  ok('it says what broke and which version, and nothing about the person', ev.exception && ev.exception.values[0].value === 'V14 test crash' && ev.release === 'earworm@V14' && ev.tags && ev.tags.device === 'phone' && !ev.user && !JSON.stringify(ev).match(/ip_address|email/), { release: ev.release, tags: ev.tags, user: ev.user });
+  ok('it says what broke and which version, and nothing about the person', ev.exception && ev.exception.values[0].value === 'V14 test crash' && ev.release === 'earworm@V14.1' && ev.tags && ev.tags.device === 'phone' && !ev.user && !JSON.stringify(ev).match(/ip_address|email/), { release: ev.release, tags: ev.tags, user: ev.user });
   ok('and it tells Sentry not to keep the IP address', !!(ev.sdk && ev.sdk.settings && ev.sdk.settings.infer_ip === 'never'), ev.sdk);
   ok('with a stack trace Sentry can read', ev.exception && ev.exception.values[0].stacktrace.frames.length > 0 && ev.exception.values[0].stacktrace.frames.every(f => f.lineno > 0));
   await P.page.click('#tabSettings'); await sleep(300);
   const ab = await P.G(() => ({ sw: (document.getElementById('sw-improve') || {}).getAttribute && document.getElementById('sw-improve').getAttribute('aria-checked'), v: (document.getElementById('aboutVersion') || {}).textContent, sub: (document.querySelector('.about .sub') || {}).textContent }));
-  ok('Settings: Help improve EarWorm is on, says what it sends, and shows the version', ab.sw === 'true' && /No names, no emails/.test(ab.sub) && ab.v === 'EarWorm V14', ab);
+  ok('Settings: Help improve EarWorm is on, says what it sends, and shows the version', ab.sw === 'true' && /No names, no emails/.test(ab.sub) && ab.v === 'EarWorm V14.1', ab);
   await P.shot('v14-settings');
   await P.page.click('#sw-improve'); await sleep(200);
   const before2 = sentryHits.length; await P.G(() => { window.__gymTapes.report(new Error('should not send'), 'test'); localStorage.removeItem('hp.pinged'); }); await sleep(300);
@@ -268,7 +278,7 @@ async function device(browser, name, o) {
   ok('a bad email is caught before sending', /does not look right/.test(await P.G(() => document.getElementById('fbMsg').textContent)) && mock.feedback.length === 0);
   await P.page.fill('#fbEmail', 'tester@example.com'); await P.page.click('#fbSend'); await sleep(800);
   const fbk = mock.feedback[0] || {};
-  ok('it sends the message (and the email for a reply), then says thanks', mock.feedback.length === 1 && fbk.message === 'Gym mode is fire' && fbk.email === 'tester@example.com' && fbk.version === 'V14' && /Thanks, it is sent/.test(await P.G(() => document.getElementById('toast').textContent)), fbk);
+  ok('it sends the message (and the email for a reply), then says thanks', mock.feedback.length === 1 && fbk.message === 'Gym mode is fire' && fbk.email === 'tester@example.com' && fbk.version === 'V14.1' && /Thanks, it is sent/.test(await P.G(() => document.getElementById('toast').textContent)), fbk);
   /* what's new */
   await P.page.click('#newsBtn'); await sleep(300);
   const nw = await P.G(() => ({ h: document.querySelector('#sheetPanel h2').textContent, n: document.querySelectorAll('.news li').length }));
