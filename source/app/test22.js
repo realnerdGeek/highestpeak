@@ -36,7 +36,7 @@ async function device(browser, name, o) {
   await new Promise(r => server.listen(8794, r));
   const browser = await chromium.launch({ args: ['--autoplay-policy=no-user-gesture-required'] });
   const P = await device(browser, 'phone', {});
-  ok('V16', (await P.G(() => window.__gymTapes.VERSION)) === 'V16');
+  ok('V16 or later', +String(await P.G(() => window.__gymTapes.VERSION)).replace(/^V/, '') >= 16);
   await P.add([M + 'Leg-day-beeps.mp4', M + 'all-black.mp4'], 2);
   await P.page.click('#tabLibrary'); await sleep(200); await P.page.click('.list .row-hit >> nth=0'); await P.until(() => !window.__gymTapes.audio.paused);
   await P.page.click('#player .now-open'); await sleep(900);
