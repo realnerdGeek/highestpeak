@@ -14,7 +14,7 @@ const allErrors = [];
 async function device(browser, name, o) {
   o = o || {};
   const ctx = await browser.newContext(Object.assign({ colorScheme: 'dark' }, o.pc ? { viewport: o.vp || { width: 1920, height: 969 } } : { viewport: { width: 440, height: 956 }, deviceScaleFactor: 2, hasTouch: true }));
-  await ctx.addInitScript(q => { window.HP_STANDALONE = true; if (q.quiet) window.__HP_QUIET = true; try { if (q.asked) localStorage.setItem('hp.syncAsked', '1'); localStorage.setItem('hp.seenVersion', 'V14'); } catch (e) { /* blank page */ } }, { quiet: o.quiet !== false, asked: o.asked !== false });
+  await ctx.addInitScript(q => { window.HP_STANDALONE = true; if (q.quiet) window.__HP_QUIET = true; window.__HP_RT_OFF = true; try { if (q.asked) localStorage.setItem('hp.syncAsked', '1'); localStorage.setItem('hp.seenVersion', 'V15'); } catch (e) { /* blank page */ } }, { quiet: o.quiet !== false, asked: o.asked !== false });
   await ctx.route('https://o4512286113660928.ingest.us.sentry.io/**', route => route.fulfill({ status: 200, body: '{}' }));
   await ctx.route(SB, route => mock.handle(route));
   const page = await ctx.newPage();
@@ -43,7 +43,7 @@ async function device(browser, name, o) {
 
   /* ===== phone: the big player opens once, no double take ===== */
   const P = await device(browser, 'phone');
-  ok('this is V14.2', (await P.G(() => window.__gymTapes.VERSION)) === 'V14.2');
+  ok('this is V14.2 or later', /^V1[4-9]/.test(await P.G(() => window.__gymTapes.VERSION)));
   await P.add(files, 4);
   await P.page.click('#tabLibrary'); await sleep(200); await P.page.click('.list .row-hit >> nth=0'); await sleep(700);
   const track = () => P.G(() => { window.__log = []; const f = document.getElementById('full'), t0 = performance.now();
