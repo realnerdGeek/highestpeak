@@ -177,13 +177,13 @@ async function signInUI(D, email, pw) {
   await P.page.waitForSelector('form[data-form="newpw"]', { timeout: 15000 });
   ok('the reset link opened in a browser tab (as on iPhone) shows Set a new password without signing that tab in, link cleaned out of the address', !/access_token/.test(P.page.url()) && !(await P.G(() => !!window.__gymTapes.SYNC.sess)) && !(await P.G(() => window.__gymTapes.SYNC.on)));
   await P.page.fill('#authPw', 'brand-new-pass'); await P.page.click('#authGo'); await sleep(600);
-  ok('the new password is saved, and it says to sign in in the app', Array.from(mock.users.values())[0].pw === 'brand-new-pass' && /Sign in with it in the Ear Worm app/.test(await P.page.textContent('#toast')));
+  ok('the new password is saved, and it says to sign in in the app', Array.from(mock.users.values())[0].pw === 'brand-new-pass' && /Sign in with it in the EarWorm app/.test(await P.page.textContent('#toast')));
   await signInUI(P, EMAIL, 'brand-new-pass');
   await P.page.waitForFunction(() => window.__gymTapes.SYNC.on && window.__gymTapes.SYNC.okAt > 0 && !window.__gymTapes.SYNC.busy, null, { timeout: 60000 }); await sleep(500);
   ok('signing in with the new password works', (await P.titles()).length === 2);
   // a confirm link opened in a browser tab only confirms
   await P.page.goto('about:blank'); await P.page.goto('http://localhost:8784/' + mock.link(EMAIL, 'signup')); await P.ready(); await sleep(400);
-  ok('a confirm link opened in a browser tab says to sign in in the app, and leaves the sign-in that was there alone', /Now sign in in the Ear Worm app/.test(await P.page.textContent('#toast')) && (await P.G(() => window.__gymTapes.SYNC.on)));
+  ok('a confirm link opened in a browser tab says to sign in in the app, and leaves the sign-in that was there alone', /Now sign in in the EarWorm app/.test(await P.page.textContent('#toast')) && (await P.G(() => window.__gymTapes.SYNC.on)));
 
   /* ===== 14 days in the bin ===== */
   await P.G(async () => { const g = window.__gymTapes, t = g.S.tracks.find(x => x.title === 'tt-vp9'); await g.store.update('tracks', t.id, { trashed: Date.now() - 15 * 86400000 }); });

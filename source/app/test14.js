@@ -118,7 +118,7 @@ async function setup(browser, opts) {
 
   // the big player
   await page.click('#tabLibrary'); await page.click('#libUploads'); await page.click('#trackList .row:has(.title:text-is("tt-vp9")) .row-hit'); await sleep(600);
-  await page.click('[data-act="full-open"]'); await sleep(400);
+  await page.click('[data-act="full-open"]:visible'); await sleep(400); // V14 added a second one for the computer's Now playing panel
   const fw1 = await page.isVisible('#fWatch');
   await page.screenshot({ path: DIR + '/shots/d1-full-watch.png' });
   await page.click('#fWatch'); await waitVid(); await sleep(400); v = await vid();

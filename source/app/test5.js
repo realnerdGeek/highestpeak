@@ -58,7 +58,7 @@ const FAKE = () => {
   const imgInfo = async id => { const m = await sharp(blobs.get(id)).metadata(), st = await sharp(blobs.get(id)).stats(); return { type: types.get(id), w: m.width, h: m.height, format: m.format, mean: Math.round((st.channels[0].mean + st.channels[1].mean + st.channels[2].mean) / 3), kb: Math.round(blobs.get(id).length / 1024) }; };
 
   await page.goto('http://localhost:8768/'); await ready();
-  ok('name is Ear Worm in the page title and header (V13)', (await page.title()) === 'Ear Worm' && /Ear Worm/.test(await page.textContent('h1')), await page.textContent('h1'));
+  ok('name is EarWorm in the page title and header (V13 Ear Worm, one word since V14)', (await page.title()) === 'EarWorm' && /EarWorm/.test(await page.textContent('h1')), await page.textContent('h1'));
   ok('logo mark is in the header (V13: the Ear Worm icon)', await page.isVisible('h1 .brand-ic svg'));
 
   // cover from the video
@@ -84,7 +84,7 @@ const FAKE = () => {
   // play it: player shows the picture, lock screen gets title + artwork + the right buttons
   await page.click('.row:has-text("all-black") .row-hit'); await sleep(900);
   const ms = await G(() => { const m = navigator.mediaSession.metadata; return { title: m && m.title, artist: m && m.artist, art: m && m.artwork && m.artwork[0] && m.artwork[0].src.slice(0, 22), playerImg: !!document.querySelector('#pCover .cover.img img'), playing: !document.getElementById('audio').paused }; });
-  ok('player and lock screen use the cover', ms.title === 'all-black' && ms.artist === 'Ear Worm' && /^data:image\/(jpeg|png)/.test(ms.art) && ms.playerImg && ms.playing, ms);
+  ok('player and lock screen use the cover', ms.title === 'all-black' && ms.artist === 'EarWorm' && /^data:image\/(jpeg|png)/.test(ms.art) && ms.playerImg && ms.playing, ms);
   await page.screenshot({ path: DIR + '/shots/31-player-cover.png' });
   await page.click('#playBtn');
   const old = t.cover;

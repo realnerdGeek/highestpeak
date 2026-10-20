@@ -68,7 +68,8 @@ body.no-glass .f-top .icon-btn,body.no-glass .f-watch,body.no-glass .full .chips
 #view.enter .list > .row:nth-child(4),#view.enter .tile:nth-child(4),#view.enter .rot:nth-child(4){animation-delay:.09s}
 #view.enter .list > .row:nth-child(n+5),#view.enter .tile:nth-child(n+5),#view.enter .rot:nth-child(n+5){animation-delay:.12s}
 @keyframes rowIn{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:none}}
-::view-transition-group(np-cover){animation-duration:.42s;animation-timing-function:cubic-bezier(.2,.9,.25,1)}
+::view-transition-group(np-cover){animation-duration:.3s;animation-timing-function:cubic-bezier(.2,.9,.25,1)}
+::view-transition-old(root),::view-transition-new(root){animation-duration:.22s}
 .vt-on .full{animation:none}
 @media (prefers-reduced-motion: reduce){
   #view.enter .list > .row,#view.enter .tile,#view.enter .rot,.heart[aria-pressed="true"] svg,.burst,.full.gym .gym-hint{animation:none}
@@ -311,6 +312,7 @@ def apply(d):
     d.rep("if (out) paint(out, setFindBody());", "if (out) paint(out, setFindBody()); sideCur();")
     d.before('/* ---------- loudness, for volume leveling ---------- */', EXTRA)
     apply_b(d)
+    apply_c(d)
 
 
 # ---------------------------------------------------------------------------------------------------------------------
@@ -527,3 +529,136 @@ def apply_b(d):
     d.before('/* ---------- loudness, for volume leveling ---------- */', GUIDE_JS)
     d.after("const ACT = {\n", ACTS_B)
     d.rep("window.__gymTapes = { isPC: () => isPC(),", "window.__gymTapes = { isPC: () => isPC(), cloudText, trashCloudBytes, toggleLike: id => toggleLike(id),")
+
+
+# ---------------------------------------------------------------------------------------------------------------------
+# V14 chunk C: tester tools. Crash reports straight to Sentry (errors only, nothing personal), an anonymous weekly count,
+# Send feedback, the version and What's new, and one Help improve EarWorm switch for the first two.
+
+CSS_C = r"""
+/* Help improve EarWorm, feedback, what's new */
+.about{margin-top:18px}
+.about-b{display:flex;gap:8px;margin-top:10px}
+.about-b .btn{flex:1 1 0;min-width:0}
+.about-v{margin:10px 4px 0;font-size:12px;color:var(--muted);text-align:center}
+#fbText{width:100%;box-sizing:border-box;min-height:120px;resize:vertical;font:inherit;padding:12px 14px;border-radius:14px;border:1px solid var(--line);background:var(--surface);color:var(--ink)}
+.news{list-style:none;margin:4px 0 6px;padding:0;display:flex;flex-direction:column;gap:12px}
+.news li{display:flex;flex-direction:column;gap:2px;padding-left:16px;position:relative}
+.news li::before{content:"";position:absolute;left:0;top:7px;width:8px;height:8px;border-radius:4px;background:var(--accent)}
+.news b{font-size:15px}.news span{font-size:14px;color:var(--muted)}
+"""
+
+TOOLS_JS = r"""/* ----- V14: tester tools: crash reports, an anonymous weekly count, feedback, what's new ----- */
+const VERSION = 'V14';
+const WHATS_NEW = [
+  ['A new look', 'Frosted glass on the controls, EarWorm lime, bigger covers, and a Now playing panel on computers.'],
+  ['Gestures', 'Swipe the mini player to skip, drag the big player down to close it, double-tap a cover to like it.'],
+  ['Gym mode', 'Tap the cover in the big player and everything hides except the cover and a thin progress line.'],
+  ['Name it', 'Right after an upload, give it a real name instead of Upload 85.'],
+  ['A safer library', 'See whether this device protects your library, and get a nudge when a backup is due.'],
+  ['EarWorm', 'One word now. Re-add the app to your home screen to get the new name there.']
+];
+const realHost = () => location.protocol === 'https:' && !/^(localhost|127\.|0\.0\.0\.0|\[::1\])/.test(location.hostname);
+const improveOn = () => S.opt.improve !== false && (realHost() || !!window.__HP_REPORT_TEST);
+const devKind = () => (isPC() ? 'computer' : 'phone');
+function deviceId() {
+  let id = '';
+  try { id = localStorage.getItem('hp.device') || ''; if (!id) { id = (window.crypto && crypto.randomUUID ? crypto.randomUUID() : Date.now().toString(36) + Math.random().toString(36).slice(2)).replace(/[^A-Za-z0-9]/g, ''); localStorage.setItem('hp.device', id); } }
+  catch (e) { id = 'nostore' + Math.random().toString(36).slice(2, 12); }
+  return id;
+}
+function isoWeek(d) {
+  const t = new Date(Date.UTC(d.getFullYear(), d.getMonth(), d.getDate())), day = t.getUTCDay() || 7; t.setUTCDate(t.getUTCDate() + 4 - day);
+  const y = t.getUTCFullYear(), w = Math.ceil(((t - Date.UTC(y, 0, 1)) / 86400000 + 1) / 7); return y + '-W' + String(w).padStart(2, '0');
+}
+/* once a week per device: a random device id, the week, the version, phone or computer. Nothing else. */
+async function weeklyPing() {
+  if (!improveOn()) return;
+  const week = isoWeek(new Date()); let last = ''; try { last = localStorage.getItem('hp.pinged') || ''; } catch (e) { /* fine */ }
+  if (last === week) return;
+  try {
+    await sbFetch('/rest/v1/pings', { method: 'POST', json: { device: deviceId(), week, version: VERSION, kind: devKind() }, headers: { Prefer: 'return=minimal,resolution=ignore-duplicates' }, wait: 15000 });
+    try { localStorage.setItem('hp.pinged', week); } catch (e) { /* fine */ }
+  } catch (e) { /* offline or the cloud is asleep: next time */ }
+}
+/* crash reports: errors only, sent straight to Sentry. No names, no emails, nothing uploaded, no screen recording. */
+const SENTRY = { dsn: 'https://cc25cb6e30f18962f6c732604894a377@o4512286113660928.ingest.us.sentry.io/4512286125588480', sent: 0, seen: new Set() };
+const cleanUrl = u => String(u || '').replace(/[?#].*$/, '');
+function stackFrames(stack) {
+  const out = [];
+  String(stack || '').split('\n').slice(0, 40).forEach(line => {
+    const m = /^\s*at (?:(.+?) \()?(.+?):(\d+):(\d+)\)?\s*$/.exec(line) || /^\s*(.*?)@(.+?):(\d+):(\d+)\s*$/.exec(line); if (!m) return;
+    const file = cleanUrl(m[2]);
+    out.push({ function: m[1] || '?', filename: file, lineno: +m[3], colno: +m[4], in_app: file === cleanUrl(location.href) || /index\.html$/.test(file) });
+  });
+  return out.reverse();       // Sentry wants the oldest call first
+}
+function report(e, how) {
+  try {
+    if (!improveOn() || SENTRY.sent >= 10) return;
+    const type = (e && e.name) || 'Error', value = String((e && e.message) || e || 'Unknown error').slice(0, 500), key = type + ':' + value;
+    if (SENTRY.seen.has(key)) return; SENTRY.seen.add(key); SENTRY.sent++;
+    const m = /^https:\/\/([^@]+)@([^/]+)\/(\d+)$/.exec(SENTRY.dsn); if (!m) return;
+    const id = (window.crypto && crypto.randomUUID ? crypto.randomUUID() : (Date.now().toString(16) + Math.random().toString(16).slice(2))).replace(/[^a-f0-9]/gi, '').slice(0, 32).padEnd(32, '0');
+    const standalone = !!(navigator.standalone || (window.matchMedia && window.matchMedia('(display-mode: standalone)').matches));
+    const ev = { event_id: id, timestamp: Date.now() / 1000, platform: 'javascript', level: 'error', release: 'earworm@' + VERSION, environment: realHost() ? 'production' : 'test',
+      tags: { device: devKind(), home_screen_app: String(standalone), where: S.full ? 'big player' : S.tab },
+      exception: { values: [{ type, value, stacktrace: { frames: stackFrames(e && e.stack) }, mechanism: { type: how || 'onerror', handled: false } }] },
+      request: { url: cleanUrl(location.href) } };
+    const body = JSON.stringify({ event_id: id, sent_at: new Date().toISOString(), dsn: SENTRY.dsn }) + '\n' + JSON.stringify({ type: 'event' }) + '\n' + JSON.stringify(ev) + '\n';
+    fetch('https://' + m[2] + '/api/' + m[3] + '/envelope/?sentry_version=7&sentry_key=' + m[1] + '&sentry_client=earworm%2F14', { method: 'POST', body, keepalive: true, headers: { 'Content-Type': 'text/plain;charset=UTF-8' } }).catch(() => {});
+  } catch (x) { /* reporting never breaks the app */ }
+}
+window.addEventListener('error', e => { if (e && e.error) report(e.error, 'onerror'); });
+window.addEventListener('unhandledrejection', e => { const r = e && e.reason; if (r instanceof Error) report(r, 'unhandledrejection'); });
+function aboutBlock() {
+  return '<section class="group about"><div class="card"><div class="set"><div class="grow"><div class="set-t">Help improve EarWorm</div><p class="sub">Sends crash reports and an anonymous weekly count. No names, no emails, nothing you uploaded.</p></div>' +
+    swBtn('improve', 'Help improve EarWorm') + '</div></div><div class="about-b"><button class="btn sm" id="feedbackBtn" data-act="feedback">Send feedback</button><button class="btn sm" id="newsBtn" data-act="whats-new">What\'s new · ' + VERSION + '</button></div>' +
+    '<p class="about-v" id="aboutVersion">EarWorm ' + VERSION + '</p></section>';
+}
+function feedbackSheet() {
+  sheet('<h2>Send feedback</h2><p class="sub">What is broken, what is annoying, what you want next. It goes straight to the developer.</p>' +
+    '<form data-form="feedback" novalidate><textarea id="fbText" name="msg" maxlength="2000" rows="5" placeholder="What is on your mind?" data-focus aria-label="Feedback"></textarea>' +
+    '<input type="email" id="fbEmail" name="email" maxlength="200" placeholder="Email, only if you want a reply" autocomplete="email" aria-label="Email for a reply">' +
+    '<p class="sub auth-msg" id="fbMsg" aria-live="polite"></p><div class="pair"><button type="button" class="btn" data-act="sheet-close">Cancel</button><button type="submit" class="btn primary" id="fbSend">Send</button></div></form>', { kind: 'feedback' });
+}
+async function sendFeedback(f) {
+  const msg = f.elements.msg.value.trim(), email = f.elements.email.value.trim(), say = t => { const m = $('#fbMsg'); if (m) m.textContent = t; }, b = $('#fbSend');
+  if (!msg) return say('Type something first.');
+  if (email && !/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email)) return say('That email does not look right. Leave it empty if you do not want a reply.');
+  if (b) b.disabled = true; say('Sending');
+  try { await sbFetch('/rest/v1/feedback', { method: 'POST', json: { message: msg.slice(0, 2000), email: email || null, version: VERSION, kind: devKind() }, headers: { Prefer: 'return=minimal' }, wait: 20000 }); closeSheet(); toast('Thanks, it is sent.'); }
+  catch (e) { if (b) b.disabled = false; say(e && e.code === 'offline' ? 'Could not send. Check your connection and try again.' : 'Could not send it right now. Try again in a bit.'); }
+}
+function whatsNewSheet() {
+  lsSet('hp.seenVersion', VERSION);
+  sheet('<h2>What\'s new in ' + VERSION + '</h2><ul class="news">' + WHATS_NEW.map(x => '<li><b>' + x[0] + '</b><span>' + x[1] + '</span></li>').join('') + '</ul><button class="btn primary" id="newsOk" data-act="sheet-close">Nice</button>', { kind: 'news' });
+}
+function maybeNews() {
+  if (window.__HP_QUIET || GUIDE.open || !S.ready || sheetOpen() || S.full) return;
+  let seen = ''; try { seen = localStorage.getItem('hp.seenVersion') || ''; } catch (e) { return; }
+  if (seen === VERSION) return;
+  if (!S.tracks.length && !lsNum('hp.since')) { lsSet('hp.seenVersion', VERSION); return; }        // brand new here: the guide does the talking
+  whatsNewSheet();
+}
+
+"""
+
+ACTS_C = r"""  feedback() { feedbackSheet(); },
+  'whats-new'() { whatsNewSheet(); },
+"""
+
+
+def apply_c(d):
+    d.before('</style>', CSS_C)
+    d.rep("glass: true, nameIt: true };", "glass: true, nameIt: true, improve: true };")
+    d.rep("'glass', 'nameIt'].forEach(k =>", "'glass', 'nameIt', 'improve'].forEach(k =>")
+    d.rep("function optChanged(k) {\n", "function optChanged(k) {\n  if (k === 'improve' && S.opt.improve) weeklyPing();\n")
+    d.rep("(cur.k === 'quick' ? group('', quickBody()) : secBody(cur.k, false))", "(cur.k === 'quick' ? group('', quickBody()) + aboutBlock() : secBody(cur.k, false))")
+    d.rep("IC.chev + '</button>').join('') + '</div></section>';", "IC.chev + '</button>').join('') + '</div></section>' + aboutBlock();")
+    d.before("  rename(f) {", "  feedback(f) { sendFeedback(f); },\n")
+    d.rep("function closeSheet() {\n  setTimeout(maybeGuide, 400);\n", "function closeSheet() {\n  setTimeout(maybeGuide, 400); setTimeout(maybeNews, 700);\n")
+    d.after("  checkPersist(); if (S.tracks.length && !lsNum('hp.since')) lsSet('hp.since', Date.now());", "\n  if (first) setTimeout(() => { maybeNews(); weeklyPing(); }, 1500);")
+    d.before('/* ---------- loudness, for volume leveling ---------- */', TOOLS_JS)
+    d.after("const ACT = {\n", ACTS_C)
+    d.rep("window.__gymTapes = { isPC: () => isPC(),", "window.__gymTapes = { isPC: () => isPC(), VERSION, isoWeek, report, deviceId,")

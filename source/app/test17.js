@@ -217,9 +217,9 @@ async function makeAccount(D, email) {
   ok('text and buttons are bigger', L.title === '40px' && L.body === '17px', L);
   await C.page.click('.list .row-hit'); await C.page.waitForFunction(() => !window.__gymTapes.audio.paused, null, { timeout: 15000 }).catch(() => {});
   const bar = await box('.player-in'); nav = await box('#nav');
-  ok('the player is a bar across the bottom, the full width, and the sidebar stops above it', bar.x <= 1 && bar.w >= L.vw - 2 && bar.y + bar.h >= L.vh - 1 && bar.h < 140 && nav.h <= L.vh - bar.h + 2, { bar, nav });
-  const parts = await C.G(() => { const r = s => document.querySelector('#player ' + s).getBoundingClientRect(); return { now: r('.now').x, ctl: r('.ctl').x, wave: r('.wave').width, vh: document.querySelector('#player .ctl').getBoundingClientRect().y }; });
-  ok('now playing on the left, the controls in the middle above the waveform', parts.now < parts.ctl && parts.wave > 250, parts);
+  ok('the player is a Now playing panel down the right side (V14; it was a bar along the bottom), and the sidebar runs the full height', bar.x + bar.w >= L.vw - 1 && bar.w > 280 && bar.w < 400 && bar.y <= 1 && bar.h >= L.vh - 2 && nav.h >= L.vh - 2, { bar, nav });
+  const parts = await C.G(() => { const r = s => document.querySelector('#player ' + s).getBoundingClientRect(); return { now: r('.now').y, wave: r('.wave').y, ctl: r('.ctl').y, ww: r('.wave').width }; });
+  ok('in the panel: the cover and name on top, then the waveform, then the controls (V14)', parts.now < parts.wave && parts.wave < parts.ctl && parts.ww > 250, parts);
   await C.page.click('#tabHome'); await sleep(400); await C.shot('v12-pc-home');
   const tb = await box('#toast'); await C.page.click('#tabLibrary'); await sleep(200);
   await C.G(() => document.activeElement && document.activeElement.blur());

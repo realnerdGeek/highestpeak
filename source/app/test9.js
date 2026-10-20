@@ -174,8 +174,8 @@ const FAKE = fs.readFileSync(path.join(DIR, 'test6.js'), 'utf8').match(/const FA
   await page.click('#fQueue .row >> nth=1 >> .row-hit'); await sleep(500);
   ok('tapping one in Up next jumps to it', (await page.textContent('#fTitle')) === jumpTo && (await page.textContent('#fMeta')) === '3 of 4', await page.textContent('#fMeta'));
   await page.click('#full .ctl [data-act="prev"]'); await sleep(400);
-  await page.click('[data-act="full-close"]'); await sleep(60); const closing = await G(() => document.getElementById('full').classList.contains('out')); await sleep(350);
-  ok('the big player slides away when closed', closing && !(await page.isVisible('#full')));
+  await page.click('[data-act="full-close"]'); await sleep(60); const closing = await G(() => document.getElementById('full').classList.contains('out') || document.documentElement.classList.contains('vt-on')); await sleep(350);
+  ok('the big player slides away when closed (V14: its cover shrinks back into the mini player)', closing && !(await page.isVisible('#full')));
   // Play next from a row's menu
   const cur = await page.textContent('#pTitle'), pick = (await titles('#trackList .row .title')).find(t => t !== cur && t !== jumpTo);
   await page.click(`#trackList .row:has-text("${pick}") .more`); await page.click('[data-act="m-next"]'); await sleep(350);

@@ -1,7 +1,8 @@
 // Test 19 (V14): the redesign (glass tab bar and mini player, quick picks and big covers, the bar shrinking while
 // scrolling, swipes, gym mode, double-tap to like, drag down to close, the Glass effects switch, the computer's
 // Now playing panel and full-screen player, thin scrollbars, the Settings search highlight fix), the EarWorm name, the
-// first-open guide and sample beat, Name it, whether the library is protected, the backup nudge, cloud space in Recently deleted.
+// first-open guide and sample beat, Name it, whether the library is protected, the backup nudge, cloud space in Recently deleted,
+// the anonymous weekly count, crash reports to Sentry, the Help improve switch, Send feedback, and What's new.
 const { chromium } = require('./pw.js');
 const http = require('http'), fs = require('fs'), path = require('path');
 const makeMock = require('./mocksb.js');
@@ -10,13 +11,14 @@ const sleep = ms => new Promise(r => setTimeout(r, ms));
 let pass = 0, fail = 0; const ok = (label, cond, extra) => { cond ? pass++ : fail++; console.log((cond ? 'PASS ' : 'FAIL ') + label + (extra !== undefined ? '  -> ' + JSON.stringify(extra) : '')); };
 const server = http.createServer((req, res) => { res.writeHead(200, { 'content-type': 'text/html' }); res.end(fs.readFileSync(path.join(DIR, 'index.html'))); });
 const mock = makeMock(), SB = 'https://pkibuxnxnirvjznmcnyo.supabase.co/**';
-const allErrors = [];
+const allErrors = [], sentryHits = [];
 const LIME = 'rgb(200, 241, 53)';
 
 async function device(browser, name, o) {
   o = o || {};
   const ctx = await browser.newContext(Object.assign({ colorScheme: 'dark' }, o.pc ? { viewport: { width: 1440, height: 900 } } : { viewport: { width: 390, height: 844 }, deviceScaleFactor: 2, hasTouch: true }));
-  await ctx.addInitScript(q => { window.HP_STANDALONE = true; if (q) window.__HP_QUIET = true; try { localStorage.setItem('hp.syncAsked', '1'); } catch (e) { /* blank page */ } }, o.quiet !== false);
+  await ctx.addInitScript(q => { window.HP_STANDALONE = true; if (q.quiet) window.__HP_QUIET = true; if (q.report) window.__HP_REPORT_TEST = true; try { localStorage.setItem('hp.syncAsked', '1'); } catch (e) { /* blank page */ } }, { quiet: o.quiet !== false, report: !!o.report });
+  await ctx.route('https://o4512286113660928.ingest.us.sentry.io/**', route => { sentryHits.push({ url: route.request().url(), body: route.request().postData() }); route.fulfill({ status: 200, body: '{}' }); });
   await ctx.route(SB, route => mock.handle(route));
   const page = await ctx.newPage();
   page.on('pageerror', e => allErrors.push(name + ' pageerror: ' + e.message));
@@ -45,7 +47,7 @@ async function device(browser, name, o) {
   const browser = await chromium.launch({ args: ['--autoplay-policy=no-user-gesture-required'] });
 
   /* ===== phone: the floating glass tab bar and mini player ===== */
-  const P = await device(browser, 'phone');
+  const P = await device(browser, 'phone', { report: true });
   await P.add([DIR + '/media/two-tones.mp3', DIR + '/media/mono-low.wav', DIR + '/media/Leg-day-beeps.mp4', DIR + '/media/all-black.mp4'], 4);
   await P.page.click('#tabHome'); await sleep(300);
   const nav = await P.box('#nav'), navCss = await P.G(() => { const s = getComputedStyle(document.getElementById('nav')); return { blur: s.backdropFilter || s.webkitBackdropFilter, r: s.borderRadius }; });
@@ -234,6 +236,47 @@ async function device(browser, name, o) {
     g2.SYNC.st = old.st; g2.S.trash = old.trash; return r;
   });
   ok('the cloud space line says how much of it is sitting in Recently deleted', /of 1 GB cloud space used, .+ of it in Recently deleted/.test(cl.text) && cl.tb > 0, cl);
+
+  /* ===== V14 chunk C: tester tools ===== */
+  const pg = mock.pings.slice();
+  ok('once a week each device sends an anonymous count: a random id, the week, the version, phone or computer, nothing else', pg.length === 1 && /^[A-Za-z0-9]{8,64}$/.test(pg[0].device) && pg[0].week === await P.G(() => window.__gymTapes.isoWeek(new Date())) && pg[0].version === 'V14' && pg[0].kind === 'phone' && Object.keys(pg[0]).length === 4, pg);
+  await P.page.reload(); await P.ready(); await sleep(2200);
+  ok('not twice in the same week', mock.pings.length === 1, mock.pings.length);
+  await P.G(() => window.__gymTapes.report(new Error('V14 test crash'), 'test')); await sleep(400);
+  const hit = sentryHits.find(h => /V14 test crash/.test(h.body || '')), lines = hit ? hit.body.trim().split('\n').map(l => JSON.parse(l)) : [];
+  const ev = lines[2] || {};
+  ok('a crash report goes to the EarWorm project in Sentry', !!hit && /\/api\/4512286125588480\/envelope\//.test(hit.url) && /sentry_key=cc25cb6e30f18962f6c732604894a377/.test(hit.url) && lines[1] && lines[1].type === 'event', hit && hit.url);
+  ok('it says what broke and which version, and nothing about the person', ev.exception && ev.exception.values[0].value === 'V14 test crash' && ev.release === 'earworm@V14' && ev.tags && ev.tags.device === 'phone' && !ev.user && !JSON.stringify(ev).match(/ip_address|email/), { release: ev.release, tags: ev.tags, user: ev.user });
+  ok('with a stack trace Sentry can read', ev.exception && ev.exception.values[0].stacktrace.frames.length > 0 && ev.exception.values[0].stacktrace.frames.every(f => f.lineno > 0));
+  await P.page.click('#tabSettings'); await sleep(300);
+  const ab = await P.G(() => ({ sw: (document.getElementById('sw-improve') || {}).getAttribute && document.getElementById('sw-improve').getAttribute('aria-checked'), v: (document.getElementById('aboutVersion') || {}).textContent, sub: (document.querySelector('.about .sub') || {}).textContent }));
+  ok('Settings: Help improve EarWorm is on, says what it sends, and shows the version', ab.sw === 'true' && /No names, no emails/.test(ab.sub) && ab.v === 'EarWorm V14', ab);
+  await P.shot('v14-settings');
+  await P.page.click('#sw-improve'); await sleep(200);
+  const before2 = sentryHits.length; await P.G(() => { window.__gymTapes.report(new Error('should not send'), 'test'); localStorage.removeItem('hp.pinged'); }); await sleep(300);
+  await P.page.reload(); await P.ready(); await sleep(2200);
+  ok('switched off: no crash reports and no count', sentryHits.length === before2 && mock.pings.length === 1, { hits: sentryHits.length - before2, pings: mock.pings.length });
+  await P.page.click('#tabSettings'); await sleep(300); await P.page.click('#sw-improve'); await sleep(1200);
+  ok('switched back on: the count is sent once (a repeat in the same week is ignored)', mock.pings.length === 1 && await P.G(() => localStorage.getItem('hp.pinged') === window.__gymTapes.isoWeek(new Date())));
+  /* feedback */
+  await P.page.click('#feedbackBtn'); await sleep(300);
+  await P.page.click('#fbSend'); await sleep(150);
+  ok('Send feedback: an empty message asks for something first', /Type something first/.test(await P.G(() => document.getElementById('fbMsg').textContent)));
+  await P.page.fill('#fbText', 'Gym mode is fire'); await P.page.fill('#fbEmail', 'nope'); await P.page.click('#fbSend'); await sleep(150);
+  ok('a bad email is caught before sending', /does not look right/.test(await P.G(() => document.getElementById('fbMsg').textContent)) && mock.feedback.length === 0);
+  await P.page.fill('#fbEmail', 'tester@example.com'); await P.page.click('#fbSend'); await sleep(800);
+  const fbk = mock.feedback[0] || {};
+  ok('it sends the message (and the email for a reply), then says thanks', mock.feedback.length === 1 && fbk.message === 'Gym mode is fire' && fbk.email === 'tester@example.com' && fbk.version === 'V14' && /Thanks, it is sent/.test(await P.G(() => document.getElementById('toast').textContent)), fbk);
+  /* what's new */
+  await P.page.click('#newsBtn'); await sleep(300);
+  const nw = await P.G(() => ({ h: document.querySelector('#sheetPanel h2').textContent, n: document.querySelectorAll('.news li').length }));
+  ok("What's new lists what changed in V14", nw.h === "What's new in V14" && nw.n >= 5, nw);
+  await P.page.click('#newsOk'); await sleep(300);
+  await F.G(() => localStorage.removeItem('hp.seenVersion')); await F.page.reload(); await F.ready();
+  await F.page.waitForSelector('#newsOk', { timeout: 6000 }).catch(() => {});
+  ok("after updating, someone who already uses the app sees What's new once", await F.G(() => !!document.getElementById('newsOk')));
+  await F.page.click('#newsOk'); await sleep(300); await F.page.reload(); await F.ready(); await sleep(2200);
+  ok('and not again', !(await F.G(() => !!document.getElementById('newsOk'))));
 
   ok('no page errors', allErrors.length === 0, allErrors);
   console.log(`\n${pass} passed, ${fail} failed`);
