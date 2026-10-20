@@ -13,7 +13,7 @@
 <meta name="theme-color" content="#F5F5F7" media="(prefers-color-scheme: light)">
 <meta name="theme-color" content="#0A0A0D" media="(prefers-color-scheme: dark)">
 <meta name="color-scheme" content="light dark">
-<meta name="hp-build" content="20261020002319-2d5063a2">
+<meta name="hp-build" content="20261020013433-a74047e8">
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="apple-touch-icon" href="apple-touch-icon.png">
 <link rel="icon" type="image/png" href="icon-192.png">
@@ -657,8 +657,8 @@ h1 .brand-t{font-size:25px}
 /* ===================== V14: the redesign ===================== */
 :root{--accent:#C8F135;--accent-ink:#4A6A00;--on-accent:#0A0A0D;--round:ui-rounded,"SF Pro Rounded","Nunito",system-ui,-apple-system,sans-serif;
   --g-bg:rgba(255,255,255,.68);--g-line:rgba(10,10,20,.08);--g-hi:rgba(255,255,255,.8);--g-sh:0 10px 30px rgba(16,16,32,.14);--g-solid:#FFFFFF;--g-over:rgba(255,255,255,.55)}
-@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){--accent-ink:#C8F135;--g-bg:rgba(34,34,42,.52);--g-line:rgba(255,255,255,.13);--g-hi:rgba(255,255,255,.18);--g-sh:0 12px 32px rgba(0,0,0,.55);--g-solid:#1C1C23;--g-over:rgba(255,255,255,.1)}}
-:root[data-theme="dark"],:root[data-skin="dark"]{--accent-ink:#C8F135;--g-bg:rgba(34,34,42,.52);--g-line:rgba(255,255,255,.13);--g-hi:rgba(255,255,255,.18);--g-sh:0 12px 32px rgba(0,0,0,.55);--g-solid:#1C1C23;--g-over:rgba(255,255,255,.1)}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){--accent-ink:#C8F135;--g-bg:rgba(34,34,42,.62);--g-line:rgba(255,255,255,.13);--g-hi:rgba(255,255,255,.18);--g-sh:0 12px 32px rgba(0,0,0,.55);--g-solid:#1C1C23;--g-over:rgba(255,255,255,.1)}}
+:root[data-theme="dark"],:root[data-skin="dark"]{--accent-ink:#C8F135;--g-bg:rgba(34,34,42,.62);--g-line:rgba(255,255,255,.13);--g-hi:rgba(255,255,255,.18);--g-sh:0 12px 32px rgba(0,0,0,.55);--g-solid:#1C1C23;--g-over:rgba(255,255,255,.1)}
 :root[data-skin="light"]{--accent-ink:#4A6A00;--g-bg:rgba(255,255,255,.62);--g-line:rgba(10,10,20,.1);--g-hi:rgba(255,255,255,.8);--g-sh:0 10px 30px rgba(16,16,32,.16);--g-solid:#FFFFFF;--g-over:rgba(255,255,255,.55)}
 /* rounded headings, lime for the main buttons and anything switched on */
 .page-t,.sec-h h3,.f-title,.empty h2,.sheet-panel h2,.np-head span{font-family:var(--round);font-weight:800}
@@ -718,7 +718,7 @@ body.no-glass .f-top .icon-btn,body.no-glass .f-watch,body.no-glass .full .chips
 @keyframes rowIn{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:none}}
 ::view-transition-group(np-cover){animation-duration:.3s;animation-timing-function:cubic-bezier(.2,.9,.25,1)}
 ::view-transition-old(root),::view-transition-new(root){animation-duration:.22s}
-.vt-on .full{animation:none}
+.vt-on .full,.full.vt-in{animation:none}   /* V14.2: opened with the cover grow, the old slide-up stays off (it used to restart: the double take) */
 @media (prefers-reduced-motion: reduce){
   #view.enter .list > .row,#view.enter .tile,#view.enter .rot,.heart[aria-pressed="true"] svg,.burst,.full.gym .gym-hint{animation:none}
   .nav,.player{transition:none!important}
@@ -729,8 +729,9 @@ body.no-glass .f-top .icon-btn,body.no-glass .f-watch,body.no-glass .full .chips
   .app{padding-bottom:calc(60px + var(--player-h,0px) + var(--nav-h,66px) + env(safe-area-inset-bottom,0px))}
   .nav{left:50%;right:auto;bottom:calc(12px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);width:min(520px,calc(100% - 24px));box-sizing:border-box;padding:6px;border-radius:34px;
     transition:left .34s cubic-bezier(.2,.9,.25,1.1),width .34s cubic-bezier(.2,.9,.25,1.1),transform .34s cubic-bezier(.2,.9,.25,1.1),padding .34s}
-  .nav-in{max-width:none}
-  .nav button{min-height:54px;border-radius:27px;font-size:10.5px;transition:background .2s,color .2s}
+  .nav-in{max-width:none;display:flex;align-items:center}
+  .nav button{flex:1 1 0;overflow:hidden;white-space:nowrap;min-height:54px;border-radius:27px;font-size:10.5px;
+    transition:flex-grow .34s cubic-bezier(.2,.9,.25,1),opacity .2s ease,font-size .26s ease,gap .26s ease,padding .34s,background .2s,color .2s}
   .nav button[aria-selected="true"]{background:color-mix(in srgb,var(--ink) 11%,transparent);color:var(--accent-ink)}
   .nav .plus{width:36px;height:26px;border-radius:13px;background:var(--accent);color:var(--on-accent)}
   .player{left:50%;right:auto;transform:translateX(-50%);width:min(520px,calc(100% - 24px));padding:0;bottom:calc(var(--nav-h,66px) + 20px + env(safe-area-inset-bottom,0px));
@@ -744,9 +745,9 @@ body.no-glass .f-top .icon-btn,body.no-glass .f-watch,body.no-glass .full .chips
   .toast{bottom:calc(var(--player-h,0px) + var(--nav-h,66px) + 30px + env(safe-area-inset-bottom,0px))}
   /* scrolling down: the tab bar shrinks to one round button and the mini player slides in next to it */
   body.nav-min .nav{left:12px;transform:none;width:62px;padding:3px}
-  body.nav-min .nav-in{grid-template-columns:minmax(0,1fr)}
-  body.nav-min .nav button:not([aria-selected="true"]),body.nav-min .nav .dot{display:none}
-  body.nav-min .nav button{font-size:0;gap:0;min-height:54px}
+  body.nav-min .nav button{font-size:0;gap:0}
+  body.nav-min .nav button:not([aria-selected="true"]){flex-grow:.0001;opacity:0;padding:0;pointer-events:none}
+  body.nav-min .nav .dot{opacity:0}
   body.nav-min .player{left:84px;transform:none;width:calc(100% - 96px);bottom:calc(12px + env(safe-area-inset-bottom,0px))}
   body.nav-min .player.mini .player-in{border-radius:31px}
   body.nav-min .player.mini .now .cover{border-radius:50%}
@@ -799,8 +800,9 @@ body.no-glass .f-top .icon-btn,body.no-glass .f-watch,body.no-glass .full .chips
   body.no-glass .full .f-side{background:var(--raise);-webkit-backdrop-filter:none;backdrop-filter:none}
   .full .f-side .list > .row{margin-inline:0}
   /* thin scrollbars that only show while scrolling */
-  *{scrollbar-width:thin;scrollbar-color:color-mix(in srgb,var(--ink) 22%,transparent) transparent}
   ::-webkit-scrollbar{width:10px;height:10px}
+  ::-webkit-scrollbar-button{display:none;width:0;height:0}
+  ::-webkit-scrollbar-corner{background:transparent}
   ::-webkit-scrollbar-track{background:transparent}
   ::-webkit-scrollbar-thumb{background-color:color-mix(in srgb,var(--ink) 22%,transparent);border-radius:10px;border:3px solid transparent;background-clip:padding-box}
   html:not(.scrolling) ::-webkit-scrollbar-thumb{background-color:transparent}
@@ -853,10 +855,10 @@ body.no-glass .f-top .icon-btn,body.no-glass .f-watch,body.no-glass .full .chips
 .nameit-ok svg{width:14px;height:14px}
 .nameit-l{display:block;margin:4px 0 6px;font-size:13px;font-weight:700;color:var(--muted)}
 /* the backup nudge */
-.nudge{margin-top:14px;border-radius:18px;padding:14px;background:color-mix(in srgb,var(--accent) 9%,transparent);border:1px solid color-mix(in srgb,var(--accent) 34%,transparent);display:flex;flex-direction:column;gap:10px}
-.nudge-t{font-weight:700;font-size:15px}
-.nudge .sub{margin:3px 0 0}
-.nudge-b{display:flex;gap:8px}
+.bk-nudge{margin-top:14px;border-radius:18px;padding:14px;background:color-mix(in srgb,var(--accent) 9%,transparent);border:1px solid color-mix(in srgb,var(--accent) 34%,transparent);display:flex;flex-direction:column;gap:10px}
+.bk-nudge-t{font-weight:700;font-size:15px}
+.bk-nudge .sub{margin:3px 0 0}
+.bk-nudge-b{display:flex;gap:8px}
 .ok-line{color:var(--accent-ink)}
 
 /* Help improve EarWorm, feedback, what's new */
@@ -869,6 +871,55 @@ body.no-glass .f-top .icon-btn,body.no-glass .f-watch,body.no-glass .full .chips
 .news li{display:flex;flex-direction:column;gap:2px;padding-left:16px;position:relative}
 .news li::before{content:"";position:absolute;left:0;top:7px;width:8px;height:8px;border-radius:4px;background:var(--accent)}
 .news b{font-size:15px}.news span{font-size:14px;color:var(--muted)}
+
+/* ===================== V14.2 ===================== */
+.f-art,.f-info{display:contents}
+.f-keys{display:none}
+/* phones: with the tab bar tucked in, the mini player drops its size button so the name has room */
+body.nav-min .player.mini #sizeBtn{display:none}
+/* short phones (like an iPhone SE): a smaller cover so play fits on the first screen of the big player */
+@media (max-width: 899.98px) and (max-height: 740px){
+  .f-cover{width:min(100%,300px,35vh)}
+  .full-in{gap:10px}
+}
+@media (min-width: 900px){
+  .rot-grid{grid-template-columns:repeat(3,minmax(0,1fr))}   /* quick picks: rows of 3, so 6 make two full rows (no lone one) */
+  .full{--cv:min(42vw,calc(100vh - 150px),820px);padding-block:0}
+  .full-in{max-width:none;min-height:100vh;box-sizing:border-box;padding:18px clamp(28px,4vw,72px)}
+  .f-body{flex:1;display:grid;grid-template-columns:var(--cv) minmax(320px,min(680px,36vw));justify-content:center;align-items:center;gap:clamp(32px,4.5vw,80px);margin:0}
+  .f-main{display:contents}
+  .f-art{display:block;position:relative;width:var(--cv)}
+  .f-art .f-cover{width:100%;margin:0}
+  .f-art .f-cover .cover{border-radius:28px}
+  .f-art .f-watch{position:absolute;left:16px;bottom:16px;margin:0;z-index:1}
+  .f-info{display:grid;grid-template-columns:minmax(0,1fr) auto;column-gap:24px;row-gap:12px;height:max(var(--cv),470px);min-width:0;
+    grid-template-rows:auto auto auto auto auto minmax(0,1fr) auto;grid-template-areas:"head head" "wave wave" "times times" "ctl vol" "chips chips" "side side" "keys keys"}
+  .f-info>.f-head{grid-area:head}
+  .f-info>.wave,.f-info>.gym-prog,.f-info>.gym-hint{grid-area:wave;margin:0}
+  .f-info>.times{grid-area:times;margin-top:-6px}
+  .f-info>.ctl{grid-area:ctl;justify-content:space-between;gap:6px;min-width:0}
+  .f-info>.ctl>*{flex-shrink:0}
+  .f-info>.vol{grid-area:vol;width:clamp(120px,11vw,180px);align-self:center}
+  .f-info>.chips{grid-area:chips;justify-content:flex-start}
+  .f-info>.chips:empty{display:none}
+  .f-info>.f-side{grid-area:side;position:static;max-height:none;min-height:0;overflow-y:auto;align-self:stretch}
+  .f-keys{grid-area:keys;display:block;margin:0;font-size:12.5px;color:var(--muted)}
+}
+@media (min-width: 900px) and (max-width: 1180px){
+  .f-info{grid-template-rows:auto auto auto auto auto auto minmax(0,1fr) auto;grid-template-areas:"head head" "wave wave" "times times" "ctl ctl" "vol vol" "chips chips" "side side" "keys keys"}
+  .f-info>.vol{width:auto}
+}
+@media (min-width: 900px){
+  .f-title{font-size:clamp(30px,2.6vw,44px)}
+  /* gym mode on a computer: a bigger cover in the middle, the name and a thin line under it */
+  .full.gym{--cv:min(60vh,600px)}
+  .full.gym .f-body{grid-template-columns:var(--cv);align-content:center;row-gap:20px}
+  .full.gym .f-info{display:flex;flex-direction:column;gap:10px;height:auto}
+  .full.gym .f-keys{display:none}
+  /* no page scrollbar showing behind the full-screen player */
+  html:has(#full:not([hidden])){overflow:hidden}
+}
+@supports not selector(::-webkit-scrollbar){@media (min-width: 900px){*{scrollbar-width:thin;scrollbar-color:color-mix(in srgb,var(--ink) 22%,transparent) transparent}}}
 </style>
 
 <div id="wall" hidden></div>
@@ -935,9 +986,9 @@ body.no-glass .f-top .icon-btn,body.no-glass .f-watch,body.no-glass .full .chips
       <div class="f-from">Playing from<b id="fFrom"></b></div>
       <button class="icon-btn" data-act="full-menu" aria-label="Options for this upload"><svg width="22" height="22" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><circle cx="5" cy="12" r="1.9"/><circle cx="12" cy="12" r="1.9"/><circle cx="19" cy="12" r="1.9"/></svg></button>
     </div>
-    <div class="f-body"><div class="f-main">
+    <div class="f-body"><div class="f-main"><div class="f-art">
     <div class="f-cover" id="fCover"></div>
-    <button class="f-watch" id="fWatch" data-act="watch-cur" hidden><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="5" width="18" height="14" rx="3"/><path d="M10 9.3v5.4l4.6-2.7z" fill="currentColor"/></svg>Watch original</button>
+    <button class="f-watch" id="fWatch" data-act="watch-cur" hidden><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="5" width="18" height="14" rx="3"/><path d="M10 9.3v5.4l4.6-2.7z" fill="currentColor"/></svg>Watch original</button></div><div class="f-info">
     <div class="f-head">
       <div class="grow"><div class="f-title" id="fTitle"></div><div class="f-meta" id="fMeta"></div></div>
       <button class="heart big js-heart" id="fHeart" data-act="like-cur" aria-pressed="false" aria-label="Like"><svg width="22" height="22" viewBox="0 0 24 24" stroke-width="1.9" stroke-linejoin="round" aria-hidden="true"><path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/></svg></button>
@@ -960,10 +1011,10 @@ body.no-glass .f-top .icon-btn,body.no-glass .f-watch,body.no-glass .full .chips
     </div>
     <div class="vol" hidden><button class="vol-ic js-vol-ic" data-act="mute" aria-label="Mute"></button><input type="range" class="js-vol" min="0" max="100" step="1" value="100" aria-label="Volume"></div>
     <div class="chips" id="fChips"></div>
-    </div><div class="f-side">
+    <div class="f-side">
     <div class="sec-h"><h3>Up next</h3><span class="f-note" id="fNextNote"></span></div>
     <div class="list" id="fQueue" data-sortlist="queue"></div>
-    </div></div>
+    </div><p class="f-keys">Space plays and pauses · Esc closes</p></div></div></div>
   </div>
 </section>
 
@@ -1611,7 +1662,7 @@ async function makeLocalStore() {
 
 /* ---------- state ---------- */
 let store = null;
-const OPT_DEFAULTS = { autoTrim: true, speed: 1, keepPitch: false, level: false, fade: 0, sections: true, sort: 'new', delay: 0, join: false, hStats: true, hPresets: true, hRotation: true, hPlaylists: true, hNewest: true, keepVideo: true, videoEnd: true, syncVideo: false, glass: true, nameIt: true, improve: true };
+const OPT_DEFAULTS = { autoTrim: true, speed: 1, keepPitch: false, level: false, fade: 0, sections: true, sort: 'new', delay: 0, join: false, hStats: true, hPresets: true, hRotation: true, hPlaylists: true, hNewest: true, keepVideo: true, videoEnd: true, syncVideo: false, glass: true, nameIt: true, improve: true, nav: 'scroll' };
 function cleanOpts(o) {
   const d = Object.assign({}, OPT_DEFAULTS); if (!o) return d;
   ['autoTrim', 'keepPitch', 'level', 'sections', 'join', 'hStats', 'hPresets', 'hRotation', 'hPlaylists', 'hNewest', 'keepVideo', 'videoEnd', 'syncVideo', 'glass', 'nameIt', 'improve'].forEach(k => { if (typeof o[k] === 'boolean') d[k] = o[k]; });
@@ -1619,6 +1670,7 @@ function cleanOpts(o) {
   if ([0.75, 0.85, 1, 1.15, 1.25].indexOf(+o.speed) >= 0) d.speed = +o.speed;
   if ([0, 40, 120, 300].indexOf(+o.fade) >= 0) d.fade = +o.fade;
   if (['new', 'old', 'az', 'long', 'short', 'liked', 'top'].indexOf(o.sort) >= 0) d.sort = o.sort;
+  if (['full', 'scroll', 'small'].indexOf(o.nav) >= 0) d.nav = o.nav;
   return d;
 }
 const S = { tracks: [], playlists: [], ready: false, tab: 'home', lib: 'uploads', recent: [], recentSig: '[]', mini: false, pl: null, shuffle: false, loop: 'off', usage: null, ui: null, bgSig: undefined, opt: cleanOpts(null), optSig: '', q: '', sel: null,
@@ -1957,7 +2009,7 @@ const SET_SECS = [
   { k: 'playback', name: 'Playback', sub: () => 'Speed, start delay, stop timer' },
   { k: 'sound', name: 'Sound', sub: () => 'Volume leveling, loop fade' },
   { k: 'uploads', name: 'Uploads and videos', sub: () => 'End clips, kept videos, join' },
-  { k: 'look', name: 'Look', sub: () => 'Background, glass effects' },
+  { k: 'look', name: 'Look', sub: () => isPC() ? 'Background, glass effects' : 'Background, glass effects, tab bar' },
   { k: 'home', name: 'Home', sub: () => 'What shows on Home' },
   { k: 'library', name: 'Library and storage', sub: () => (V14.persisted === true ? 'Protected on this device, space used' : V14.persisted === false ? 'Not protected yet, space used' : 'Space used') + ', recently deleted, clear library' },
   { k: 'backup', name: 'Backup', sub: () => 'Back up or restore your library' }
@@ -1990,7 +2042,8 @@ function secBody(k, all) {
       setRow('Name new uploads', 'Right after an upload, ask what to call it.', swBtn('nameIt', 'Name new uploads')) +
       setRow('First-open guide', 'How to get videos into EarWorm, step by step.', '<button class="btn sm" id="guideShow" data-act="guide-show">Show</button>'));
   if (k === 'look') return group(t('Look'), setCol('Background', 'Pick a color, or tap the last circle to use a photo of your own.', bgSwatches()) +
-    setRow('Glass effects', 'Frosted glass on the tab bar, the player and the buttons over covers. Turn it off if it feels slow or hard to read.', swBtn('glass', 'Glass effects')));
+    setRow('Glass effects', 'Frosted glass on the tab bar, the player and the buttons over covers. Turn it off if it feels slow or hard to read.', swBtn('glass', 'Glass effects')) +
+    (isPC() ? '' : setCol('Tab bar', S.opt.nav === 'full' ? 'Always the full bar.' : S.opt.nav === 'small' ? 'Always one round button next to the player. Tap it to open the full bar.' : 'Scroll down and it tucks into one round button next to the player. Scroll up and it comes back.', segCtl('nav', S.opt.nav || 'scroll', [['full', 'Full'], ['scroll', 'On scroll'], ['small', 'Small']]))));
   if (k === 'home') return group(t('Home'),
       setRow('Stats', 'Your streak and time listened, under the greeting.', swBtn('hStats', 'Show stats on Home')) +
       setRow('Presets', '', swBtn('hPresets', 'Show presets on Home')) +
@@ -2025,7 +2078,7 @@ const SET_WORDS = {
   'Stop timer': 'sleep timer minutes', 'Stop after loops': 'repeat count plays times loop', 'Play saved sections': 'section part trim',
   'Volume leveling': 'loudness normalize loud quiet volume', 'Loop fade': 'fade crossfade click pop', 'Remove end clips': 'tiktok logo outro ending chime watermark',
   'Keep original videos': 'video save space', 'Cut end clips from videos': 'video ending outro tiktok', 'Check every upload for an end clip': 'scan fix old end clip tiktok',
-  'Join uploads': 'merge combine stitch', 'Name new uploads': 'rename title name ask', 'First-open guide': 'help tutorial how start guide intro', 'Glass effects': 'glass blur frosted transparent liquid see through', 'Background': 'theme color colour wallpaper dark light mode photo look', 'Stats': 'streak time listened',
+  'Join uploads': 'merge combine stitch', 'Name new uploads': 'rename title name ask', 'First-open guide': 'help tutorial how start guide intro', 'Glass effects': 'glass blur frosted transparent liquid see through', 'Tab bar': 'tab bar tabs navigation bottom small shrink compact scroll', 'Background': 'theme color colour wallpaper dark light mode photo look', 'Stats': 'streak time listened',
   'Your rotation': 'recent most played', 'Newest uploads': 'recent', 'Recently deleted': 'trash bin restore undo deleted', 'Clear library on this device': 'wipe reset erase delete everything',
   'Back up library': 'backup export save zip', 'Restore from backup': 'import restore backup', 'Sync your library': 'account sign in log in login create account sync',
   'Sync': 'sign out log out logout sync now cloud', 'Sync videos': 'video cloud', 'Two-step sign-in': '2fa two factor authenticator code mfa security keeper',
@@ -2205,6 +2258,7 @@ function optChanged(k) {
   if (k === 'improve' && S.opt.improve) weeklyPing();
   if (k === 'speed' || k === 'keepPitch') applyRate();
   if (k === 'syncVideo') soon(200);
+  if (k === 'nav') { TABBAR.open = 0; navSet(S.opt.nav === 'small'); }
   if (k === 'level' || k === 'fade') { if (track(P.cur) && engineFor() !== audio) reloadKeep(); else applyGain(); if (k === 'level' && S.opt.level) levelAll(); }
   if (k === 'sections') { if (S.opt.sections) S.tracks.forEach(t => { if (secWanted(t)) buildSection(t); }); if (track(P.cur)) reloadKeep(); }
   updatePlayer();
@@ -2676,11 +2730,11 @@ let fullTimer = 0;
 function openFull() {
   if (!track(P.cur) || S.full) return;
   const f = $('#full'); clearTimeout(fullTimer); f.classList.remove('out');
-  S.full = true; vtSwap(() => { f.hidden = false; f.scrollTop = 0; f.classList.remove('gym'); updatePlayer(); }, true);
+  S.full = true; f.classList.toggle('vt-in', vtOK()); vtSwap(() => { f.hidden = false; f.scrollTop = 0; f.classList.remove('gym'); updatePlayer(); }, true);
 }
 function closeFull(now) {
   if (!S.full) return; S.full = false;
-  const f = $('#full'), done = () => { f.hidden = true; f.classList.remove('out', 'gym'); };
+  const f = $('#full'), done = () => { f.hidden = true; f.classList.remove('out', 'gym', 'vt-in'); };
   clearTimeout(fullTimer);
   if (now === true || calm) return done();
   if (vtOK()) return vtSwap(done, false);
@@ -3145,7 +3199,7 @@ async function syncNow() {
     SYNC.okAt = Date.now();
   } catch (e) { if (SYNC.on) { SYNC.err = syncErrText(e); if (e && (e.status === 401 || e.status === 403 || /Unauthorized/.test(e.code || ''))) SYNC.checked = false; } }
   finally {
-    SYNC.busy = false; SYNC.phase = ''; SYNC.upLeft = SYNC.downLeft = 0; syncShow();
+    SYNC.busy = false; SYNC.phase = ''; SYNC.upLeft = SYNC.downLeft = 0; syncShow(); if (SYNC.okAt && !SYNC.err) guideAfterSync();
     if (SYNC.again && SYNC.on) { SYNC.again = false; soon(300); }
   }
 }
@@ -3416,6 +3470,7 @@ function unameProblem(v) {
   return '';
 }
 function userSheet(first) {
+  V14.unameShown = true;
   sheet('<h2>' + (first ? 'Pick a username' : 'Change your username') + '</h2><p class="sub">3 to 20 characters: letters, numbers, dots and underscores.' + (first ? ' You can change it later in Settings, under Account.' : '') + '</p>' +
     '<form class="auth" data-form="uname"><label class="uname-in"><span>@</span><input type="text" id="unameIn" name="uname" autocomplete="username" autocapitalize="none" autocorrect="off" spellcheck="false" maxlength="20" placeholder="username" aria-label="Username" required data-focus value="' + esc(SYNC.username || '') + '"></label>' +
     '<p class="sub auth-msg" id="authMsg" aria-live="polite"></p><button type="submit" class="btn primary" id="authGo">Save</button></form>' +
@@ -3637,6 +3692,7 @@ const V14 = { touching: false, lastTouch: 0, y: 0, skip: 0 };
 function v14Player(t) {
   document.body.classList.toggle('has-np', !!t && isPC());
   document.body.classList.toggle('no-glass', S.opt.glass === false);
+  navRest();
 }
 /* on a computer, the Settings side list shows no section as open while searching */
 function sideCur() {
@@ -3671,14 +3727,33 @@ function vtSwap(update, open) {
 /* phones: scrolling down with a finger shrinks the tab bar, scrolling up or reaching the top brings it back */
 document.addEventListener('touchstart', () => { V14.touching = true; }, { passive: true });
 document.addEventListener('touchend', () => { V14.touching = false; V14.lastTouch = Date.now(); }, { passive: true });
+/* V14.2: Settings, Look, Tab bar: Full, Shrinks when scrolling (the default) or Always small. It waits for a real scroll
+   (about 30px one way) instead of flipping on every few pixels. */
+const TABBAR = { acc: 0, open: 0, t: 0 };
+const navMode = () => S.opt.nav || 'scroll';
+function navSet(min) { document.body.classList.toggle('nav-min', !!min && !isPC()); }
+function navRest() { if (TABBAR.open) return; const m = navMode(); if (m === 'small') navSet(true); else if (m === 'full') navSet(false); }
 window.addEventListener('scroll', () => {
   const y = window.scrollY, dy = y - V14.y; V14.y = y;
   if (isPC() || S.full) return;
-  if (y < 80) { document.body.classList.remove('nav-min'); return; }
+  const m = navMode();
+  if (m === 'full') return navSet(false);
+  if (m === 'small') { if (TABBAR.open && Math.abs(dy) > 2) { TABBAR.open = 0; navSet(true); } return; }
+  if (y < 80) { TABBAR.acc = 0; return navSet(false); }
   if (!(V14.touching || Date.now() - V14.lastTouch < 1200)) return;
-  if (dy > 6) document.body.classList.add('nav-min'); else if (dy < -6) document.body.classList.remove('nav-min');
+  TABBAR.acc = (dy > 0) === (TABBAR.acc > 0) ? TABBAR.acc + dy : dy;
+  if (TABBAR.acc > 28) navSet(true); else if (TABBAR.acc < -28) navSet(false);
 }, { passive: true });
-document.addEventListener('click', e => { if (e.target.closest && e.target.closest('#nav')) document.body.classList.remove('nav-min'); }, true);
+document.addEventListener('click', e => {
+  if (isPC() || !(e.target.closest && e.target.closest('#nav'))) return;
+  clearTimeout(TABBAR.t);
+  if (document.body.classList.contains('nav-min')) {            // tapping the round button opens the full bar
+    e.stopPropagation(); navSet(false); TABBAR.acc = 0;
+    if (navMode() === 'small') { TABBAR.open = Date.now(); TABBAR.t = setTimeout(() => { TABBAR.open = 0; navRest(); }, 4000); }
+    return;
+  }
+  if (navMode() === 'small') TABBAR.t = setTimeout(() => { TABBAR.open = 0; navRest(); }, 700);   // picked a tab: tuck it back in
+}, true);
 /* computers: scrollbars show while scrolling, then fade */
 let scrollFade = 0;
 document.addEventListener('scroll', () => { if (!isPC()) return; document.documentElement.classList.add('scrolling'); clearTimeout(scrollFade); scrollFade = setTimeout(() => document.documentElement.classList.remove('scrolling'), 900); }, { passive: true, capture: true });
@@ -3744,7 +3819,7 @@ const G_WORKS = '<div class="g-works"><span>' + gIc('<rect x="3" y="6" width="13
   '<span>' + gIc('<rect x="9" y="3" width="6" height="11" rx="3"/><path d="M5 11a7 7 0 0 0 14 0M12 18v3"/>') + 'Voice memos</span><span>' + gIc('<path d="M9 18V5l11-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="17" cy="16" r="3"/>') + 'MP3, WAV, M4A</span></div>';
 const guided = () => { try { return localStorage.getItem('hp.guided') === '1'; } catch (e) { return true; } };
 function maybeGuide() {
-  if (GUIDE.open || window.__HP_QUIET || !S.ready || S.tracks.length || guided() || !store || !store.canWrite || SYNC.sess || sheetOpen() || S.full || VID.open) return;
+  if (GUIDE.open || window.__HP_QUIET || !S.ready || S.tracks.length || guided() || !store || !store.canWrite || (SYNC.sess && !freshReady()) || sheetOpen() || S.full || VID.open) return;
   let asked = true; try { asked = localStorage.getItem('hp.syncAsked') === '1'; } catch (e) { /* asked */ }
   if (asked) openGuide();
 }
@@ -3759,7 +3834,7 @@ function drawGuide() {
       : '<button class="btn primary" id="guideNext" data-act="guide-next">Next</button>' + (n === 0 ? '<button class="link-btn" id="guideHave" data-act="guide-upload">I already have videos, take me to Upload</button>' : '')) + '</div></div>';
   g.hidden = false;
 }
-function closeGuide() { GUIDE.open = false; try { localStorage.setItem('hp.guided', '1'); } catch (e) { /* fine */ } const g = $('#guide'); if (g) g.remove(); }
+function closeGuide() { GUIDE.open = false; try { localStorage.setItem('hp.guided', '1'); localStorage.removeItem('hp.newAcct'); } catch (e) { /* fine */ } const g = $('#guide'); if (g) g.remove(); }
 /* a short beat made right here, so a first upload is one tap away (and nobody else's sound) */
 async function sampleBeat() {
   const OAC = window.OfflineAudioContext || window.webkitOfflineAudioContext, sr = 44100, bpm = 140, beats = 16, spb = 60 / bpm, len = Math.ceil(sr * beats * spb);
@@ -3801,6 +3876,17 @@ function afterImports(added, newId, cut) {
   if (V14.sample) { V14.sample = false; if (added === 1 && newId) { go('home'); ACT.play({ id: newId, ctx: 'all' }); } return; }
   if (namesNext(added, newId)) setTimeout(() => nameItSheet(newId, cut), 260);
 }
+
+/* ----- V14.2: a brand new account made on this device gets the first-open guide too (after its first sync comes back
+   empty). Signing in to an account that already has uploads never shows it. ----- */
+const freshAcct = () => { try { return localStorage.getItem('hp.newAcct') === '1'; } catch (e) { return false; } };
+// ready once a sync has finished and the username box (if the account has no username yet) has had its turn
+const freshReady = () => freshAcct() && !!SYNC.okAt && !SYNC.busy && (SYNC.username !== '' || !!V14.unameShown);
+function guideAfterSync() {
+  if (!freshAcct()) return;
+  if (S.tracks.length) { try { localStorage.removeItem('hp.newAcct'); } catch (e) { /* fine */ } return; }
+  setTimeout(maybeGuide, 400);
+}
 /* ----- V14: not losing uploads ----- */
 function trashCloudBytes() {
   if (!SYNC.st || !S.trash.length) return 0;
@@ -3826,12 +3912,12 @@ function backupNudge() {
   const now = Date.now(), last = lsNum('hp.lastBackup'), since = lsNum('hp.since') || now, base = Math.max(last, since);
   if (now - base < 30 * 86400000 || now < lsNum('hp.nudgeLater')) return '';
   const days = Math.floor((now - (last || since)) / 86400000);
-  return '<div class="nudge" id="nudge"><div><div class="nudge-t">Back up your library?</div><p class="sub">' + (last ? 'Your last backup was ' + days + ' days ago.' : 'You have not made a backup yet.') +
-    ' You are not signed in, so this device has the only copy.</p></div><div class="nudge-b"><button class="btn sm primary" id="nudgeGo" data-act="nudge-backup">Back up now</button><button class="btn sm" id="nudgeLater" data-act="nudge-later">Not now</button></div></div>';
+  return '<div class="bk-nudge" id="nudge"><div><div class="bk-nudge-t">Back up your library?</div><p class="sub">' + (last ? 'Your last backup was ' + days + ' days ago.' : 'You have not made a backup yet.') +
+    ' You are not signed in, so this device has the only copy.</p></div><div class="bk-nudge-b"><button class="btn sm primary" id="nudgeGo" data-act="nudge-backup">Back up now</button><button class="btn sm" id="nudgeLater" data-act="nudge-later">Not now</button></div></div>';
 }
 
 /* ----- V14: tester tools: crash reports, an anonymous weekly count, feedback, what's new ----- */
-const VERSION = 'V14.1', NEWS = 'V14';   // NEWS: the update the What's new popup is about (a bug fix doesn't show it again)
+const VERSION = 'V14.2', NEWS = 'V14';   // NEWS: the update the What's new popup is about (a bug fix doesn't show it again)
 const WHATS_NEW = [
   ['A new look', 'Frosted glass on the controls, EarWorm lime, bigger covers, and a Now playing panel on computers.'],
   ['Gestures', 'Swipe the mini player to skip, drag the big player down to close it, double-tap its cover to like.'],
@@ -5192,7 +5278,7 @@ const FORM = {
   },
   signup(f) {
     const email = f.elements.email.value.trim(), pw = f.elements.pw.value; AUTHF.email = email;
-    authRun(f, async () => { const j = await signUp(email, pw); if (j && j.access_token) { saveSess(sessFrom(j)); closeSheet(); syncStart(); render(); toast('Account made. Syncing your library.'); } else signInSheet('Check your email and tap the link to confirm your account, then sign in here.'); });
+    authRun(f, async () => { lsSet('hp.newAcct', '1'); const j = await signUp(email, pw); if (j && j.access_token) { saveSess(sessFrom(j)); closeSheet(); syncStart(); render(); toast('Account made. Syncing your library.'); } else signInSheet('Check your email and tap the link to confirm your account, then sign in here.'); });
   },
   forgot(f) { const email = f.elements.email.value.trim(); AUTHF.email = email; authRun(f, async () => { await sendReset(email); authSay('If that email has an account, a reset link is on its way. Open it on this device.'); }); },
   newpw(f) { const pw = f.elements.pw.value, here = !!SYNC.sess && !SYNC.recovery; authRun(f, async () => { await newPassword(pw); closeSheet(); toast(here ? 'Password changed.' : 'Password changed. Sign in with it in the EarWorm app.'); }); },
