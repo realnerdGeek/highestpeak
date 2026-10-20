@@ -11,7 +11,7 @@ const server = http.createServer((req, res) => { res.writeHead(200, { 'content-t
 const allErrors = [];
 async function device(browser, name, o) {
   const ctx = await browser.newContext(Object.assign({ colorScheme: 'dark', acceptDownloads: true }, o.pc ? { viewport: { width: 1440, height: 900 } } : { viewport: { width: 440, height: 956 }, deviceScaleFactor: 2, hasTouch: true }));
-  await ctx.addInitScript(() => { window.HP_STANDALONE = true; window.__HP_QUIET = true; window.__HP_RT_OFF = true;
+  await ctx.addInitScript(() => { window.HP_STANDALONE = true; window.__HP_QUIET = true; window.__HP_RT_OFF = true; window.__HP_KEEP_SILENCE = true;
     // count the beeps the app schedules
     window.__beeps = 0; const C = window.AudioContext; if (C) { const make = C.prototype.createOscillator; C.prototype.createOscillator = function () { window.__beeps++; return make.call(this); }; }
     try { localStorage.setItem('hp.syncAsked', '1'); localStorage.setItem('hp.guided', '1'); localStorage.setItem('hp.seenVersion', 'V16'); } catch (e) { /* blank page */ } });
