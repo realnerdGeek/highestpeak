@@ -11,7 +11,7 @@ source/
     v8/build.py         applies the patches below, in order, and checks the JavaScript parses
     v8/lib.py           patch helpers (rep asserts the exact match count, cut, before, after)
     v8/p5_home.py ... p16_v14.py   one patch file per version (p10 = home screen app storage, p11 = V10, p12 = V10.1, p13 = V11, p14 = V12, p15 = V13, p16 = V14)
-    test1.js ... test19.js         one test file per version (test16 = V11 sync, test17 = V12, test18 = V13, test19 = V14)
+    test1.js ... test20.js         one test file per version (test16 = V11 sync, test17 = V12, test18 = V13, test19 = V14, test20 = V14.2)
     legacy.js           loaded by tests 1 to 16: shows every Settings section on one page, marks the sync invite as seen, and sets __HP_QUIET (no first-open guide, Name it sheet or What's new popping up mid-test)
     mocksb.js           a stand-in for Supabase (accounts, docs table rules, files, usernames, two-step sign-in, delete account, V14 pings and feedback)
     pw.js               finds Playwright (PW_PATH, the Claude workspace copy, or npm)
@@ -39,7 +39,7 @@ python3 v8/build.py                   # back to the current version
 ### Making a new version
 1. Add the next patch file (after p16_v14.py: `app/v8/p17_v15.py`) with an `apply(d)` function, and add it to the module list in `build.py`.
 2. Build, then test (below).
-3. Add the next test file (`test20.js`) for the new version.
+3. Add the next test file (`test21.js`) for the new version.
 4. Deploy (below).
 
 ## Test
@@ -64,7 +64,7 @@ Most older tests use copies of real saved videos (other people's TikToks and Mat
 - `app/seed/`: workout-loop.mp4 and its files
 - `app/out/four.zip`
 
-Without the zip, test18 and test19 run fully. With it, everything but test4 runs.
+Without the zip, test18, test19 and test20 run fully. With it, everything but test4 runs.
 
 ### SQL tests
 Run Postgres 16 locally, load `sql/mock.sql` and `sql/mock12b.sql` (a stand-in for Supabase's auth and storage schemas; signed-in users can't read the sign-in factors table, like the real one), then `setup.sql`, `setup12.sql`, `fix12.sql`, `v14.sql`, then `rls12.sql` and `rls14.sql`. Every check prints `t`, and every ERROR line in the output is an expected refusal.

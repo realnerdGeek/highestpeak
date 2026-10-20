@@ -9,8 +9,8 @@ CSS = r'''
 /* ===================== V14: the redesign ===================== */
 :root{--accent:#C8F135;--accent-ink:#4A6A00;--on-accent:#0A0A0D;--round:ui-rounded,"SF Pro Rounded","Nunito",system-ui,-apple-system,sans-serif;
   --g-bg:rgba(255,255,255,.68);--g-line:rgba(10,10,20,.08);--g-hi:rgba(255,255,255,.8);--g-sh:0 10px 30px rgba(16,16,32,.14);--g-solid:#FFFFFF;--g-over:rgba(255,255,255,.55)}
-@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){--accent-ink:#C8F135;--g-bg:rgba(34,34,42,.52);--g-line:rgba(255,255,255,.13);--g-hi:rgba(255,255,255,.18);--g-sh:0 12px 32px rgba(0,0,0,.55);--g-solid:#1C1C23;--g-over:rgba(255,255,255,.1)}}
-:root[data-theme="dark"],:root[data-skin="dark"]{--accent-ink:#C8F135;--g-bg:rgba(34,34,42,.52);--g-line:rgba(255,255,255,.13);--g-hi:rgba(255,255,255,.18);--g-sh:0 12px 32px rgba(0,0,0,.55);--g-solid:#1C1C23;--g-over:rgba(255,255,255,.1)}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){--accent-ink:#C8F135;--g-bg:rgba(34,34,42,.62);--g-line:rgba(255,255,255,.13);--g-hi:rgba(255,255,255,.18);--g-sh:0 12px 32px rgba(0,0,0,.55);--g-solid:#1C1C23;--g-over:rgba(255,255,255,.1)}}
+:root[data-theme="dark"],:root[data-skin="dark"]{--accent-ink:#C8F135;--g-bg:rgba(34,34,42,.62);--g-line:rgba(255,255,255,.13);--g-hi:rgba(255,255,255,.18);--g-sh:0 12px 32px rgba(0,0,0,.55);--g-solid:#1C1C23;--g-over:rgba(255,255,255,.1)}
 :root[data-skin="light"]{--accent-ink:#4A6A00;--g-bg:rgba(255,255,255,.62);--g-line:rgba(10,10,20,.1);--g-hi:rgba(255,255,255,.8);--g-sh:0 10px 30px rgba(16,16,32,.16);--g-solid:#FFFFFF;--g-over:rgba(255,255,255,.55)}
 /* rounded headings, lime for the main buttons and anything switched on */
 .page-t,.sec-h h3,.f-title,.empty h2,.sheet-panel h2,.np-head span{font-family:var(--round);font-weight:800}
@@ -390,10 +390,10 @@ CSS_B = r"""
 .nameit-ok svg{width:14px;height:14px}
 .nameit-l{display:block;margin:4px 0 6px;font-size:13px;font-weight:700;color:var(--muted)}
 /* the backup nudge */
-.nudge{margin-top:14px;border-radius:18px;padding:14px;background:color-mix(in srgb,var(--accent) 9%,transparent);border:1px solid color-mix(in srgb,var(--accent) 34%,transparent);display:flex;flex-direction:column;gap:10px}
-.nudge-t{font-weight:700;font-size:15px}
-.nudge .sub{margin:3px 0 0}
-.nudge-b{display:flex;gap:8px}
+.bk-nudge{margin-top:14px;border-radius:18px;padding:14px;background:color-mix(in srgb,var(--accent) 9%,transparent);border:1px solid color-mix(in srgb,var(--accent) 34%,transparent);display:flex;flex-direction:column;gap:10px}
+.bk-nudge-t{font-weight:700;font-size:15px}
+.bk-nudge .sub{margin:3px 0 0}
+.bk-nudge-b{display:flex;gap:8px}
 .ok-line{color:var(--accent-ink)}
 """
 
@@ -496,8 +496,8 @@ function backupNudge() {
   const now = Date.now(), last = lsNum('hp.lastBackup'), since = lsNum('hp.since') || now, base = Math.max(last, since);
   if (now - base < 30 * 86400000 || now < lsNum('hp.nudgeLater')) return '';
   const days = Math.floor((now - (last || since)) / 86400000);
-  return '<div class="nudge" id="nudge"><div><div class="nudge-t">Back up your library?</div><p class="sub">' + (last ? 'Your last backup was ' + days + ' days ago.' : 'You have not made a backup yet.') +
-    ' You are not signed in, so this device has the only copy.</p></div><div class="nudge-b"><button class="btn sm primary" id="nudgeGo" data-act="nudge-backup">Back up now</button><button class="btn sm" id="nudgeLater" data-act="nudge-later">Not now</button></div></div>';
+  return '<div class="bk-nudge" id="nudge"><div><div class="bk-nudge-t">Back up your library?</div><p class="sub">' + (last ? 'Your last backup was ' + days + ' days ago.' : 'You have not made a backup yet.') +
+    ' You are not signed in, so this device has the only copy.</p></div><div class="bk-nudge-b"><button class="btn sm primary" id="nudgeGo" data-act="nudge-backup">Back up now</button><button class="btn sm" id="nudgeLater" data-act="nudge-later">Not now</button></div></div>';
 }
 
 """
@@ -698,7 +698,15 @@ CSS_D = r"""
 /* ===================== V14.2 ===================== */
 .f-art,.f-info{display:contents}
 .f-keys{display:none}
+/* phones: with the tab bar tucked in, the mini player drops its size button so the name has room */
+body.nav-min .player.mini #sizeBtn{display:none}
+/* short phones (like an iPhone SE): a smaller cover so play fits on the first screen of the big player */
+@media (max-width: 899.98px) and (max-height: 740px){
+  .f-cover{width:min(100%,300px,35vh)}
+  .full-in{gap:10px}
+}
 @media (min-width: 900px){
+  .rot-grid{grid-template-columns:repeat(3,minmax(0,1fr))}   /* quick picks: rows of 3, so 6 make two full rows (no lone one) */
   .full{--cv:min(42vw,calc(100vh - 150px),820px);padding-block:0}
   .full-in{max-width:none;min-height:100vh;box-sizing:border-box;padding:18px clamp(28px,4vw,72px)}
   .f-body{flex:1;display:grid;grid-template-columns:var(--cv) minmax(320px,min(680px,36vw));justify-content:center;align-items:center;gap:clamp(32px,4.5vw,80px);margin:0}
@@ -765,7 +773,7 @@ def apply_d(d):
     d.rep("{ k: 'look', name: 'Look', sub: () => 'Background, glass effects' }", "{ k: 'look', name: 'Look', sub: () => isPC() ? 'Background, glass effects' : 'Background, glass effects, tab bar' }")
     d.rep("swBtn('glass', 'Glass effects')));",
           "swBtn('glass', 'Glass effects')) +\n"
-          "    (isPC() ? '' : setCol('Tab bar', S.opt.nav === 'full' ? 'Always the full bar.' : S.opt.nav === 'small' ? 'Always one round button next to the player. Tap it to open the full bar.' : 'Scroll down and it tucks into one round button next to the player. Scroll up and it comes back.', segCtl('nav', S.opt.nav || 'scroll', [['full', 'Full'], ['scroll', 'Shrinks when scrolling'], ['small', 'Always small']]))));")
+          "    (isPC() ? '' : setCol('Tab bar', S.opt.nav === 'full' ? 'Always the full bar.' : S.opt.nav === 'small' ? 'Always one round button next to the player. Tap it to open the full bar.' : 'Scroll down and it tucks into one round button next to the player. Scroll up and it comes back.', segCtl('nav', S.opt.nav || 'scroll', [['full', 'Full'], ['scroll', 'On scroll'], ['small', 'Small']]))));")
     d.rep("'Glass effects': 'glass blur frosted transparent liquid see through',", "'Glass effects': 'glass blur frosted transparent liquid see through', 'Tab bar': 'tab bar tabs navigation bottom small shrink compact scroll',")
     d.rep("  if (k === 'syncVideo') soon(200);", "  if (k === 'syncVideo') soon(200);\n  if (k === 'nav') { TABBAR.open = 0; navSet(S.opt.nav === 'small'); }")
     # the first-open guide for brand new accounts

@@ -160,8 +160,12 @@ async function device(browser, name, o) {
   await C.page.setViewportSize({ width: 1440, height: 900 }); await sleep(300);
   ok('the full-screen player fits: play and the volume are on screen at 1440x900, 1366x768 and 1280x720 (V14.1)', fits.every(f => f.play <= f.h && f.vol <= f.h && f.scroll === 0), fits);
   await C.page.keyboard.press('Escape'); await sleep(400);
-  const sb = await C.G(() => { const d = document.createElement('div'); d.style.cssText = 'position:fixed;width:100px;height:100px;overflow:scroll'; d.innerHTML = '<div style="height:500px"></div>'; document.body.appendChild(d); const w = d.offsetWidth - d.clientWidth; d.remove(); return w; });
-  ok('scrollbars are thin on a computer (10px, since V14.2 without the browser\'s arrow buttons)', sb === 10, sb);
+  // (this test browser hides scrollbars, so check the rules: the thin EarWorm scrollbar is styled, and the standard
+  // properties that would make Chrome ignore it and draw its own with arrow buttons are not set)
+  const sb = await C.G(() => { const rules = []; const collect = r => { if (r.selectorText) rules.push(r.cssText); else if (r.cssRules && !(r.conditionText && /not selector/.test(r.conditionText))) [...r.cssRules].forEach(collect); };
+    for (const s of document.styleSheets) { try { [...s.cssRules].forEach(collect); } catch (e) { /* other origin */ } }
+    return { std: getComputedStyle(document.documentElement).scrollbarWidth, thin: rules.some(x => /::-webkit-scrollbar \{/.test(x) && /width: 10px/.test(x)), noButtons: rules.some(x => /::-webkit-scrollbar-button/.test(x) && /display: none/.test(x)) }; });
+  ok('scrollbars are thin on a computer (10px, since V14.2 without the browser\'s arrow buttons)', sb.std === 'auto' && sb.thin && sb.noButtons, sb);
 
   /* Settings search: no section stays highlighted while searching */
   await C.page.click('#tabSettings'); await sleep(300);

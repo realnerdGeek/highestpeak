@@ -60,6 +60,12 @@ async function device(browser, name, o) {
   await P.page.click('[data-act="full-close"]:visible'); await sleep(800);
   ok('closing still works', await P.G(() => document.getElementById('full').hidden));
 
+  /* ===== the editor's start and end buttons (V14's backup reminder had borrowed their class name and stacked them) ===== */
+  await P.page.click('#tabLibrary'); await sleep(200); await P.page.click('#trackList [data-act="menu"] >> nth=0'); await sleep(400); await P.page.click('[data-act="m-edit"]'); await sleep(900);
+  const ed = await P.G(() => [...document.querySelectorAll('.nudge')].map(n => { const b = [...n.querySelectorAll('button')].map(x => x.getBoundingClientRect()); return { n: b.length, row: b.length === 2 && Math.abs(b[0].top - b[1].top) < 2, border: getComputedStyle(n).borderTopWidth }; }));
+  ok('editor: the minus and plus buttons for start and end sit side by side, with no box around them', ed.length === 2 && ed.every(x => x.row && x.border === '0px'), ed);
+  await P.page.click('[data-act="ed-close"]'); await sleep(500);
+
   /* ===== phone: the tab bar ===== */
   await P.page.click('#tabHome'); await sleep(300);
   await P.G(() => { const s = document.createElement('div'); s.id = 'pad'; s.style.height = '2400px'; document.getElementById('view').appendChild(s); });
@@ -78,8 +84,8 @@ async function device(browser, name, o) {
   ok('it shrinks smoothly: part way through, the other tabs are still narrowing (not gone at once)', mid.filter(w => w > 2 && w < 60).length >= 2, mid);
   await P.G(() => { document.getElementById('pad').remove(); window.scrollTo(0, 0); }); await sleep(400);
   await P.page.click('#tabSettings'); await sleep(300); await P.page.click('[data-act="set-sec"][data-sec="look"]'); await sleep(300);
-  const seg = await P.G(() => { const b = [...document.querySelectorAll('[data-k="nav"]')]; return { opts: b.map(x => x.textContent), on: (b.find(x => x.getAttribute('aria-checked') === 'true') || {}).textContent }; });
-  ok('Settings, Look has Tab bar: Full, Shrinks when scrolling (on), Always small', seg.opts.join('|') === 'Full|Shrinks when scrolling|Always small' && seg.on === 'Shrinks when scrolling', seg);
+  const seg = await P.G(() => { const b = [...document.querySelectorAll('[data-k="nav"]')]; return { opts: b.map(x => x.textContent), on: (b.find(x => x.getAttribute('aria-checked') === 'true') || {}).textContent, fit: b.every(x => x.scrollWidth <= x.clientWidth + 1) }; });
+  ok('Settings, Look has Tab bar: Full, On scroll (on), Small, and the three fit side by side', seg.opts.join('|') === 'Full|On scroll|Small' && seg.on === 'On scroll' && seg.fit, seg);
   await P.page.click('[data-k="nav"][data-v="small"]'); await sleep(500);
   ok('Always small: the tab bar is the round button right away, even at the top', await P.min());
   await P.page.click('#nav button[aria-selected="true"]'); await sleep(450);
