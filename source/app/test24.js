@@ -7,7 +7,7 @@
 const { chromium } = require('./pw.js');
 const http = require('http'), fs = require('fs'), path = require('path');
 const { execFileSync } = require('child_process');
-const DIR = __dirname, OUT = DIR + '/out/', SITE = path.join(DIR, '..', 'pwa', 'site');
+const DIR = __dirname, OUT = DIR + '/out/v18/', SITE = path.join(DIR, '..', 'pwa', 'site');
 const sleep = ms => new Promise(r => setTimeout(r, ms));
 let pass = 0, fail = 0; const ok = (label, cond, extra) => { cond ? pass++ : fail++; console.log((cond ? 'PASS ' : 'FAIL ') + label + (extra !== undefined ? '  -> ' + JSON.stringify(extra) : '')); };
 const TYPES = { '.html': 'text/html', '.js': 'text/javascript', '.png': 'image/png', '.webmanifest': 'application/manifest+json' };
