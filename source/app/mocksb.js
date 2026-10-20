@@ -210,6 +210,15 @@ module.exports = function makeMock() {
     code(email) { const u = users.get(email), f = u && (u.factors || []).slice(-1)[0]; return f ? totp(f.secret) : null; },
     confirm(email) { const u = users.get(email); if (u) u.confirmed = true; },
     link(email, type) { const u = users.get(email), s = session(u); return '#access_token=' + s.access_token + '&expires_at=' + s.expires_at + '&expires_in=' + s.expires_in + '&refresh_token=' + s.refresh_token + '&token_type=bearer&type=' + type; },
-    rows(uid) { return Array.from(docs.values()).filter(r => r.user_id === uid); }
+    rows(uid) { return Array.from(docs.values()).filter(r => r.user_id === uid); },
+    // V15 Play anywhere: the same rule as sql/v15.sql. A signed-in device may join only its own account's "ew:<id>" topic,
+    // and once the account has a verified authenticator only with a two-step (aal2) sign-in.
+    rtAuth(at, topic) {
+      const t = tokens.get(at || '');
+      if (!t || t.exp < Date.now()) return { ok: false, reason: 'InvalidJWTExpiration: Token has expired' };
+      const u = userById(t.uid), lockedNow = !!(u && (u.factors || []).some(f => f.status === 'verified') && t.aal !== 'aal2');
+      if (topic !== 'ew:' + t.uid || lockedNow) return { ok: false, reason: 'Unauthorized: You do not have permissions to read from this Channel topic: ' + topic };
+      return { ok: true, uid: t.uid };
+    },
   };
 };

@@ -17,7 +17,7 @@ const LIME = 'rgb(200, 241, 53)';
 async function device(browser, name, o) {
   o = o || {};
   const ctx = await browser.newContext(Object.assign({ colorScheme: 'dark' }, o.pc ? { viewport: { width: 1440, height: 900 } } : { viewport: { width: 390, height: 844 }, deviceScaleFactor: 2, hasTouch: true }));
-  await ctx.addInitScript(q => { window.HP_STANDALONE = true; if (q.quiet) window.__HP_QUIET = true; if (q.report) window.__HP_REPORT_TEST = true; try { localStorage.setItem('hp.syncAsked', '1'); } catch (e) { /* blank page */ } }, { quiet: o.quiet !== false, report: !!o.report });
+  await ctx.addInitScript(q => { window.HP_STANDALONE = true; if (q.quiet) window.__HP_QUIET = true; window.__HP_RT_OFF = true; if (q.report) window.__HP_REPORT_TEST = true; try { localStorage.setItem('hp.syncAsked', '1'); } catch (e) { /* blank page */ } }, { quiet: o.quiet !== false, report: !!o.report });
   await ctx.route('https://o4512286113660928.ingest.us.sentry.io/**', route => { sentryHits.push({ url: route.request().url(), body: route.request().postData() }); route.fulfill({ status: 200, body: '{}' }); });
   await ctx.route(SB, route => mock.handle(route));
   const page = await ctx.newPage();
@@ -287,7 +287,7 @@ async function device(browser, name, o) {
   /* what's new */
   await P.page.click('#newsBtn'); await sleep(300);
   const nw = await P.G(() => ({ h: document.querySelector('#sheetPanel h2').textContent, n: document.querySelectorAll('.news li').length }));
-  ok("What's new lists what changed in V14", nw.h === "What's new in V14" && nw.n >= 5, nw);
+  ok("What's new lists what changed in the latest update", /^What's new in V\d+$/.test(nw.h) && nw.n >= 5, nw);
   await P.page.click('#newsOk'); await sleep(300);
   await F.G(() => localStorage.removeItem('hp.seenVersion')); await F.page.reload(); await F.ready();
   await F.page.waitForSelector('#newsOk', { timeout: 6000 }).catch(() => {});

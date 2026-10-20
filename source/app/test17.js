@@ -15,7 +15,7 @@ const aalOf = at => { try { return JSON.parse(Buffer.from(String(at).split('.')[
 async function device(browser, name, o) {
   o = o || {};
   const ctx = await browser.newContext(o.pc ? { viewport: { width: 1440, height: 900 } } : { viewport: { width: 390, height: 844 }, deviceScaleFactor: 2 });
-  await ctx.addInitScript(a => { window.HP_STANDALONE = true; window.__HP_QUIET = true; try { if (a.asked) localStorage.setItem('hp.syncAsked', '1'); if (a.auth && !sessionStorage.getItem('t17')) { localStorage.setItem('hp.auth', JSON.stringify(a.auth)); sessionStorage.setItem('t17', '1'); } } catch (e) { /* blank page */ } }, { asked: !!o.asked, auth: o.auth || null });
+  await ctx.addInitScript(a => { window.HP_STANDALONE = true; window.__HP_QUIET = true; window.__HP_RT_OFF = true; try { if (a.asked) localStorage.setItem('hp.syncAsked', '1'); if (a.auth && !sessionStorage.getItem('t17')) { localStorage.setItem('hp.auth', JSON.stringify(a.auth)); sessionStorage.setItem('t17', '1'); } } catch (e) { /* blank page */ } }, { asked: !!o.asked, auth: o.auth || null });
   await ctx.route(SB, route => mock.handle(route));
   const page = await ctx.newPage();
   page.on('pageerror', e => allErrors.push(name + ' pageerror: ' + e.message));
